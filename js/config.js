@@ -81,27 +81,20 @@ export const BACKGROUNDS = [
   { id: 'room',  name: 'Showroom' },
 ];
 
-// Auto's (procedurele carrosserie, zie car.js). Maten in meters, x = lengte-as (voor = +x),
-// y = hoogte, z = breedte. outline = bovenomtrek van voor-onder naar achter-onder;
-// cabin = polygoon van de kooi (sluit op de gordellijn); roof = dakpaneel van..tot (x);
-// xf/xr = wielcentra; g = bodemvrijheid.
+// Auto's: realistische glTF-modellen (zie car.js en README voor licenties).
+//  file       : pad naar het .glb-bestand
+//  wheelNodes : namen van de vier wielknooppunten in het model (worden verborgen)
+//  axle       : as waarlangs de wielen naast elkaar staan ('x' = auto ligt langs z)
+//  paint      : mesh- of materiaalnamen die de carrosseriekleur krijgen
+//  glass      : mesh- of materiaalnamen die het glasmateriaal krijgen
+//  details    : mesh- of materiaalnamen die het detailmateriaal krijgen
+//  shadow     : optionele AO-schaduwtextuur onder de auto
 export const CARS = [
-  { id: 'sedan', name: 'Sedan', L: 4.80, W: 1.86, g: 0.17, xf: 1.45, xr: -1.40,
-    outline: [[2.25,0.17],[2.40,0.30],[2.42,0.55],[2.36,0.74],[1.75,0.80],[0.95,0.90],[-1.55,0.94],[-2.20,0.96],[-2.38,0.85],[-2.42,0.55],[-2.35,0.30],[-2.25,0.17]],
-    cabin: [[0.95,0.90],[0.30,1.40],[-0.75,1.44],[-1.55,0.94]], roof: [0.30,-0.75],
-    lights: { front: [0.66, 0.10], rear: [0.84, 0.08] }, grilleY: 0.48 },
-  { id: 'suv', name: 'SUV', L: 4.70, W: 1.93, g: 0.26, xf: 1.38, xr: -1.42,
-    outline: [[2.15,0.26],[2.30,0.42],[2.35,0.72],[2.28,0.98],[1.60,1.05],[0.90,1.10],[-2.10,1.12],[-2.30,1.05],[-2.35,0.72],[-2.30,0.42],[-2.15,0.26]],
-    cabin: [[0.90,1.10],[0.35,1.68],[-1.60,1.74],[-2.10,1.12]], roof: [0.35,-1.60],
-    lights: { front: [0.88, 0.11], rear: [1.00, 0.10] }, grilleY: 0.62 },
-  { id: 'hatch', name: 'Hatchback', L: 4.30, W: 1.80, g: 0.16, xf: 1.30, xr: -1.30,
-    outline: [[2.00,0.16],[2.13,0.30],[2.15,0.58],[2.08,0.78],[1.45,0.84],[0.80,0.92],[-1.85,0.95],[-2.10,0.90],[-2.15,0.55],[-2.08,0.30],[-2.00,0.16]],
-    cabin: [[0.80,0.92],[0.20,1.44],[-1.20,1.48],[-1.95,0.95]], roof: [0.20,-1.20],
-    lights: { front: [0.70, 0.10], rear: [0.84, 0.08] }, grilleY: 0.46 },
-  { id: 'coupe', name: 'Coupé', L: 4.65, W: 1.92, g: 0.12, xf: 1.42, xr: -1.38,
-    outline: [[2.20,0.12],[2.32,0.25],[2.33,0.50],[2.25,0.66],[1.50,0.74],[0.85,0.84],[-1.30,0.88],[-2.10,0.92],[-2.30,0.80],[-2.33,0.50],[-2.25,0.25],[-2.20,0.12]],
-    cabin: [[0.85,0.84],[0.05,1.28],[-0.70,1.30],[-1.70,0.90]], roof: [0.05,-0.70],
-    lights: { front: [0.58, 0.09], rear: [0.80, 0.07] }, grilleY: 0.40 },
+  { id: 'ferrari', name: 'Ferrari 458 Italia', file: 'demo/3d/modellen/ferrari-458.glb', axle: 'x',
+    wheelNodes: ['wheel_fl', 'wheel_fr', 'wheel_rl', 'wheel_rr'],
+    paint: ['body'], glass: ['glass'], details: ['trim'],
+    shadow: { file: 'assets/models/ferrari_ao.png', w: 0.655 * 4, h: 1.3 * 4 },
+    credit: 'Ferrari 458 Italia door vicent091036 via de Three.js-voorbeelden (alleen demo)' },
 ];
 
 export const CAR_COLORS = [
@@ -126,7 +119,7 @@ export const DEFAULT_STATE = {
   tyre: true,
   profile: 35,
   caliper: 'red',
-  car: 'sedan',
+  car: 'ferrari',
   carColor: 'grey',
   bg: 'dark',
   rotate: true,

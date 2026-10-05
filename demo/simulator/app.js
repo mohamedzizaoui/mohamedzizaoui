@@ -77,8 +77,8 @@ const autoVloer = new THREE.Mesh(new THREE.CircleGeometry(30, 64), new THREE.Sha
 autoVloer.rotation.x = -Math.PI / 2; autoVloer.receiveShadow = true; autoGroep.add(autoVloer);
 
 const loader = new GLTFLoader()
-  .setDRACOLoader(new DRACOLoader().setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/libs/draco/gltf/'))
-  .setKTX2Loader(new KTX2Loader().setTranscoderPath('https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/libs/basis/').detectSupport(renderer))
+  .setDRACOLoader(new DRACOLoader().setDecoderPath('../../vendor/three/addons/libs/draco/gltf/'))
+  .setKTX2Loader(new KTX2Loader().setTranscoderPath('../../vendor/three/addons/libs/basis/').detectSupport(renderer))
   .setMeshoptDecoder(MeshoptDecoder);
 
 let studioWiel = null;        // Group

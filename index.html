@@ -26,6 +26,7 @@
       <canvas id="scene"></canvas>
       <p id="nogl" class="nogl" hidden>Je browser ondersteunt geen WebGL. Probeer een recente versie van Chrome, Edge, Firefox of Safari.</p>
       <div class="viewer-hint">Sleep om te draaien · scroll om te zoomen</div>
+      <div id="loading" class="loading" hidden><span></span> Model laden…</div>
       <button id="resetView" class="icon-btn float" type="button" title="Camera terugzetten">⟲</button>
       <div id="toast" class="toast" role="status"></div>
     </section>
@@ -44,6 +45,7 @@
         <div id="cars" class="chips"></div>
         <h3>Carrosseriekleur</h3>
         <div id="carColors" class="chips"></div>
+        <p id="carCredit" class="credit"></p>
       </div>
 
       <div class="group">

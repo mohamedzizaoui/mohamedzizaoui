@@ -6,7 +6,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { SHOP, DIAMETERS, WIDTHS, PROFILES, PCDS, DESIGNS, FINISHES, LIP_FINISHES, CALIPER_COLORS, BACKGROUNDS, CARS, CAR_COLORS, DEFAULT_STATE } from './config.js';
 import { buildRim, buildTyre, buildBrake, tyreSize, drawDesignIcon } from './wheel.js';
-import { buildCar } from './car.js';
+import { loadCar, instantiateCar, wheelRotationY } from './car.js';
 
 const $ = (sel) => document.querySelector(sel);
 const byId = (list, id) => list.find((x) => x.id === id) || list[0];
@@ -60,7 +60,7 @@ controls.enablePan = false;
 
 const VIEWS = {
   wheel: { pos: [0.55, 0.18, 1.05], min: 0.55, max: 2.4, polar: Math.PI * 0.62 },
-  car:   { pos: [5.0, 1.7, 4.6],    min: 2.4,  max: 13,  polar: Math.PI * 0.49 },
+  car:   { pos: [4.6, 1.6, 4.2],    min: 2.4,  max: 13,  polar: Math.PI * 0.49 },
 };
 function applyView(resetCamera) {
   const v = VIEWS[state.mode] || VIEWS.wheel;
@@ -121,15 +121,28 @@ mats.tyre = new THREE.MeshStandardMaterial({ color: 0x151515, roughness: 0.92, m
 mats.disc = physical({ color: '#6c6f73', metalness: 0.95, roughness: 0.45 });
 mats.hat = physical({ color: '#2a2b2e', metalness: 0.8, roughness: 0.6 });
 mats.caliper = physical({ color: '#c8102e', metalness: 0.2, roughness: 0.35, clearcoat: 0.8 });
-mats.body = physical({ color: '#7d8187', metalness: 0.55, roughness: 0.32, clearcoat: 1.0 }, { clearcoatRoughness: 0.04 });
-mats.glass = physical({ color: '#0c1118', metalness: 0.95, roughness: 0.06, clearcoat: 1.0 }, { envMapIntensity: 1.3 });
-mats.dark = new THREE.MeshStandardMaterial({ color: 0x141517, roughness: 0.95, metalness: 0.1, side: THREE.DoubleSide });
-mats.light = new THREE.MeshStandardMaterial({ color: 0xdfe9ff, emissive: 0xcfe0ff, emissiveIntensity: 1.3, roughness: 0.2 });
-mats.tail = new THREE.MeshStandardMaterial({ color: 0x8a0f16, emissive: 0xff2030, emissiveIntensity: 0.9, roughness: 0.3 });
-mats.chrome = physical({ color: '#dcdfe3', metalness: 1, roughness: 0.12 });
+// autolak, glas en details (zelfde opzet als het Three.js car-voorbeeld)
+mats.body = new THREE.MeshPhysicalMaterial({ color: 0x7d8187, metalness: 0.9, roughness: 0.45, clearcoat: 1.0, clearcoatRoughness: 0.03 });
+mats.glass = new THREE.MeshPhysicalMaterial({ color: 0xffffff, metalness: 0.25, roughness: 0, transmission: 1.0, transparent: true });
+mats.details = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 1.0, roughness: 0.5 });
+const texLoader = new THREE.TextureLoader();
+const aoShadows = new Map();
+function aoShadow(car) {
+  if (!car.shadow) return null;
+  if (!aoShadows.has(car.id)) {
+    const tex = texLoader.load(car.shadow.file);
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(car.shadow.w, car.shadow.h),
+      new THREE.MeshBasicMaterial({ map: tex, blending: THREE.MultiplyBlending, toneMapped: false, transparent: true, premultipliedAlpha: true }));
+    m.rotation.x = -Math.PI / 2; m.renderOrder = 2; m.position.y = 0.002;
+    aoShadows.set(car.id, m);
+  }
+  return aoShadows.get(car.id);
+}
 
 // ---------- opbouw ----------
 let perBuild = [];   // geometrieën en materialen van de vorige opbouw
+let buildToken = 0;  // voorkomt dat een laat geladen model alsnog wordt toegevoegd
+let cameraNeedsReset = true;
 function track(obj) {
   obj.traverse((o) => {
     if (o.geometry) perBuild.push(o.geometry);
@@ -143,6 +156,8 @@ function rebuild() {
   for (const r of perBuild) r.dispose();
   perBuild = [];
   root.clear();
+  buildToken++;
+  $('#loading').hidden = true;
 
   const design = byId(DESIGNS, state.design);
   const finish = byId(FINISHES, state.finish);
@@ -175,21 +190,37 @@ function rebuild() {
   if (state.mode === 'car') {
     const car = byId(CARS, state.car);
     mats.body.color.set(byId(CAR_COLORS, state.carColor).color);
-    const carGroup = buildCar({ car, wheelR, bodyMat: mats.body, glassMat: mats.glass, darkMat: mats.dark, lightMat: mats.light, tailMat: mats.tail, chromeMat: mats.chrome });
-    track(carGroup);
-    root.add(carGroup);
-    // exact één wiel per wielkast, voorkant naar buiten gericht
-    for (const p of carGroup.userData.wheels) {
-      const w = proto.clone();
-      w.position.set(p.x, p.y, p.z);
-      w.rotation.y = p.side > 0 ? 0 : Math.PI;
-      root.add(w);
-    }
-    shadow.scale.set(car.L * 1.25, car.W * 2.0, 1);
-    controls.target.set(0, 0.62, 0);
+    const token = ++buildToken;
+    $('#loading').hidden = false;
+    loadCar(car).then((loaded) => {
+      if (token !== buildToken) return;          // intussen is er een nieuwe configuratie
+      $('#loading').hidden = true;
+      const inst = instantiateCar(car, loaded, { bodyMat: mats.body, glassMat: mats.glass, detailsMat: mats.details });
+      const lift = wheelR - inst.r0;             // auto rust op onze wielen
+      inst.group.position.y = lift;
+      root.add(inst.group);
+      const minWidth = Math.min(...inst.wheels.map((w) => w.width));
+      // exact één velg per wielknooppunt, voorkant naar buiten
+      for (const w of inst.wheels) {
+        const m = proto.clone();
+        const axle = car.axle || 'x';
+        const p = w.pos.clone();
+        p[axle] += w.side * (minWidth / 2 - 0.015);
+        m.position.set(p.x, p.y + lift, p.z);
+        m.rotation.y = wheelRotationY(car, w.side);
+        root.add(m);
+      }
+      const ao = aoShadow(car);
+      if (ao) { root.add(ao); shadow.visible = false; }
+      else { shadow.visible = true; shadow.scale.set(inst.length * 1.25, inst.length * 0.9, 1); }
+      controls.target.set(0, inst.height * 0.4 + lift, 0);
+      VIEWS.car.pos = [inst.length * 0.95, inst.height * 1.1, inst.length * 0.85];
+      if (cameraNeedsReset) { applyView(true); cameraNeedsReset = false; }
+    }).catch((e) => { console.error(e); $('#loading').textContent = 'Model kon niet geladen worden'; });
   } else {
     proto.position.set(0, wheelR, W / 2);
     root.add(proto);
+    shadow.visible = true;
     shadow.scale.set(wheelR * 3.2, wheelR * 2.2, 1);
     controls.target.set(0, wheelR * 0.95, 0);
   }
@@ -263,7 +294,7 @@ function renderAll() {
   renderSwatches('#finishes', FINISHES, state.finish, (id) => { state.finish = id; rebuild(); });
   renderSwatches('#lips', LIP_FINISHES, state.lip, (id) => { state.lip = id; rebuild(); });
   renderSwatches('#calipers', CALIPER_COLORS, state.caliper, (id) => { state.caliper = id; rebuild(); });
-  renderSwatches('#cars', CARS, state.car, (id) => { state.car = id; rebuild(); });
+  renderSwatches('#cars', CARS, state.car, (id) => { state.car = id; cameraNeedsReset = true; rebuild(); });
   renderSwatches('#carColors', CAR_COLORS, state.carColor, (id) => { state.carColor = id; rebuild(); });
   renderSwatches('#bgs', BACKGROUNDS, state.bg, (id) => { state.bg = id; applyBg(); writeHash(); });
   $('#tyre').checked = state.tyre;
@@ -274,13 +305,13 @@ function renderAll() {
 }
 
 for (const b of document.querySelectorAll('#modes .seg')) {
-  b.addEventListener('click', () => { state.mode = b.dataset.mode; renderMode(); applyView(true); rebuild(); });
+  b.addEventListener('click', () => { state.mode = b.dataset.mode; renderMode(); cameraNeedsReset = true; applyView(state.mode === 'wheel'); rebuild(); });
 }
 $('#tyre').addEventListener('change', (e) => { state.tyre = e.target.checked; rebuild(); });
 $('#rotate').addEventListener('change', (e) => { state.rotate = e.target.checked; writeHash(); });
 $('#concave').addEventListener('input', (e) => { state.concave = Number(e.target.value) / 1000; syncConcave(); });
 $('#concave').addEventListener('change', () => rebuild());
-$('#reset').addEventListener('click', () => { Object.assign(state, DEFAULT_STATE); renderAll(); rebuild(); });
+$('#reset').addEventListener('click', () => { Object.assign(state, DEFAULT_STATE); cameraNeedsReset = true; renderAll(); rebuild(); });
 $('#resetView').addEventListener('click', () => applyView(true));
 
 function applyBg() {
@@ -398,6 +429,7 @@ $('#cPhone').textContent = SHOP.phone + (SHOP.mobile ? ' · ' + SHOP.mobile : ''
 $('#cEmail').textContent = SHOP.email;
 $('#cHours').textContent = SHOP.hours;
 $('#brandNote').textContent = `Designs geïnspireerd op de ${SHOP.brand}-collectie`;
+$('#carCredit').textContent = CARS.map((c) => c.credit).join(' · ');
 
 renderAll();
 rebuild();

@@ -103,8 +103,8 @@
 <script src="../../avd-velg-op-auto.js"></script>
 <script type="importmap">
 { "imports": {
-  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
-  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  "three": "../../vendor/three/three.module.min.js",
+  "three/addons/": "../../vendor/three/addons/"
 } }
 </script>
 <script type="module">
@@ -209,8 +209,8 @@ const barrelMat = new THREE.MeshStandardMaterial({ color: 0x2a2c30, metalness: 0
 const discMat = new THREE.MeshStandardMaterial({ color: 0x9a9ea3, metalness: 0.9, roughness: 0.4 });
 
 const loader = new GLTFLoader()
-  .setDRACOLoader(new DRACOLoader().setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/libs/draco/gltf/'))
-  .setKTX2Loader(new KTX2Loader().setTranscoderPath('https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/libs/basis/').detectSupport(renderer))
+  .setDRACOLoader(new DRACOLoader().setDecoderPath('../../vendor/three/addons/libs/draco/gltf/'))
+  .setKTX2Loader(new KTX2Loader().setTranscoderPath('../../vendor/three/addons/libs/basis/').detectSupport(renderer))
   .setMeshoptDecoder(MeshoptDecoder);
 
 let wagen = null;        // { groep, wielen: [{center, tireR, links, voor, groep}], lakMats, L, spoor }

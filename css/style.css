@@ -41,6 +41,14 @@ body[data-bg="room"] .viewer  { background: linear-gradient(180deg, #3b3f48 0%, 
   background: rgba(0,0,0,.35); padding: 6px 10px; border-radius: 8px; pointer-events: none;
 }
 body[data-bg="light"] .viewer-hint { color: #111; background: rgba(255,255,255,.5); opacity: .8; }
+.loading {
+  position: absolute; top: 14px; left: 14px; display: flex; align-items: center; gap: 8px;
+  background: rgba(0,0,0,.45); color: #fff; padding: 8px 12px; border-radius: 999px; font-size: 13px; pointer-events: none;
+}
+.loading span { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #fff6; border-top-color: #fff; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .loading span { animation: none; } }
+.credit { font-size: 10.5px; color: var(--muted); margin: 10px 0 0; line-height: 1.4; }
 .nogl { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; }
 .toast {
   position: absolute; top: 14px; left: 50%; transform: translate(-50%, -10px); opacity: 0;

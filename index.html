@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>3D Velgen Simulator – AVD Velgen</title>
+  <meta name="description" content="Stel je velgen samen in 3D: kies design, maat, afwerking en band en vraag direct een offerte aan bij AVD Velgen.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="importmap">
+    { "imports": { "three": "./vendor/three/three.module.min.js", "three/addons/": "./vendor/three/addons/" } }
+  </script>
+</head>
+<body data-bg="dark">
+  <header class="top">
+    <a id="shopLink" class="brand" href="https://avdvelgen.be" target="_blank" rel="noopener">
+      <img src="assets/logo.svg" alt="" width="36" height="36">
+      <span id="shopName">AVD Velgen</span>
+    </a>
+    <h1>3D Velgen Simulator</h1>
+    <button id="togglePanel" class="icon-btn" type="button" aria-label="Instellingen tonen of verbergen">☰</button>
+  </header>
+
+  <main class="layout">
+    <section id="viewer" class="viewer" aria-label="3D-weergave van de velg">
+      <canvas id="scene"></canvas>
+      <p id="nogl" class="nogl" hidden>Je browser ondersteunt geen WebGL. Probeer een recente versie van Chrome, Edge, Firefox of Safari.</p>
+      <div class="viewer-hint">Sleep om te draaien · scroll om te zoomen</div>
+      <button id="resetView" class="icon-btn float" type="button" title="Camera terugzetten">⟲</button>
+      <div id="toast" class="toast" role="status"></div>
+    </section>
+
+    <aside class="panel">
+      <div class="group">
+        <h2>Design</h2>
+        <div id="designs" class="designs"></div>
+      </div>
+
+      <div class="group">
+        <h2>Maat</h2>
+        <div class="row">
+          <label>Diameter <select id="diameter"></select></label>
+          <label>Breedte <select id="width"></select></label>
+        </div>
+        <label class="slider">Concaaf <output id="concaveVal">10 mm</output>
+          <input id="concave" type="range" min="0" max="45" step="1" value="10">
+        </label>
+      </div>
+
+      <div class="group">
+        <h2>Afwerking</h2>
+        <div id="finishes" class="chips"></div>
+        <h3>Lip &amp; spaakvlak</h3>
+        <div id="lips" class="chips"></div>
+      </div>
+
+      <div class="group">
+        <h2>Band &amp; remmen</h2>
+        <div class="row">
+          <label class="check"><input id="tyre" type="checkbox" checked> Band tonen</label>
+          <label>Profiel <select id="profile"></select></label>
+        </div>
+        <h3>Remklauw</h3>
+        <div id="calipers" class="chips"></div>
+      </div>
+
+      <div class="group">
+        <h2>Weergave</h2>
+        <div id="bgs" class="chips"></div>
+        <label class="check"><input id="rotate" type="checkbox" checked> Automatisch draaien</label>
+      </div>
+
+      <div class="group summary">
+        <h2>Jouw configuratie</h2>
+        <p id="sumTitle" class="sum-title"></p>
+        <p id="sumFinish"></p>
+        <p id="sumTyre" class="muted"></p>
+        <div class="actions">
+          <button id="quote" class="btn primary" type="button">Offerte aanvragen</button>
+          <button id="share" class="btn" type="button">Link delen</button>
+          <button id="download" class="btn" type="button">Afbeelding opslaan</button>
+          <button id="reset" class="btn ghost" type="button">Alles resetten</button>
+        </div>
+        <p class="disclaimer">De 3D-weergave is een visuele benadering. Kleuren en maten kunnen afwijken van het eindproduct. Vraag een offerte aan voor de exacte beschikbaarheid voor jouw wagen.</p>
+      </div>
+    </aside>
+  </main>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

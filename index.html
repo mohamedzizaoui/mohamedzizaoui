@@ -32,7 +32,22 @@
 
     <aside class="panel">
       <div class="group">
-        <h2>Design</h2>
+        <h2>Weergave</h2>
+        <div id="modes" class="segmented" role="tablist">
+          <button type="button" class="seg active" data-mode="wheel" role="tab">Alleen velg</button>
+          <button type="button" class="seg" data-mode="car" role="tab">Op auto</button>
+        </div>
+      </div>
+
+      <div id="carGroup" class="group" hidden>
+        <h2>Auto</h2>
+        <div id="cars" class="chips"></div>
+        <h3>Carrosseriekleur</h3>
+        <div id="carColors" class="chips"></div>
+      </div>
+
+      <div class="group">
+        <h2>Design <small id="brandNote" class="h2-note"></small></h2>
         <div id="designs" class="designs"></div>
       </div>
 
@@ -41,6 +56,7 @@
         <div class="row">
           <label>Diameter <select id="diameter"></select></label>
           <label>Breedte <select id="width"></select></label>
+          <label>Steekmaat <select id="pcd"></select></label>
         </div>
         <label class="slider">Concaaf <output id="concaveVal">10 mm</output>
           <input id="concave" type="range" min="0" max="45" step="1" value="10">
@@ -65,7 +81,7 @@
       </div>
 
       <div class="group">
-        <h2>Weergave</h2>
+        <h2>Achtergrond</h2>
         <div id="bgs" class="chips"></div>
         <label class="check"><input id="rotate" type="checkbox" checked> Automatisch draaien</label>
       </div>
@@ -81,7 +97,24 @@
           <button id="download" class="btn" type="button">Afbeelding opslaan</button>
           <button id="reset" class="btn ghost" type="button">Alles resetten</button>
         </div>
+        <div id="quoteBox" class="quote-box" hidden>
+          <p class="muted">Opent je e-mailprogramma niet? Kopieer de tekst hieronder en mail ze zelf.</p>
+          <textarea id="quoteText" rows="9" readonly></textarea>
+          <div class="row">
+            <button id="copyQuote" class="btn" type="button">Tekst kopiëren</button>
+            <button id="closeQuote" class="btn ghost" type="button">Sluiten</button>
+          </div>
+        </div>
         <p class="disclaimer">De 3D-weergave is een visuele benadering. Kleuren en maten kunnen afwijken van het eindproduct. Vraag een offerte aan voor de exacte beschikbaarheid voor jouw wagen.</p>
+      </div>
+
+      <div class="group contact">
+        <h2>Contact</h2>
+        <p id="cName" class="sum-title"></p>
+        <p id="cAddress"></p>
+        <p id="cPhone"></p>
+        <p id="cEmail" class="accent"></p>
+        <p id="cHours" class="muted"></p>
       </div>
     </aside>
   </main>

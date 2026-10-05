@@ -41,7 +41,6 @@ body[data-bg="room"] .viewer  { background: linear-gradient(180deg, #3b3f48 0%, 
   background: rgba(0,0,0,.35); padding: 6px 10px; border-radius: 8px; pointer-events: none;
 }
 body[data-bg="light"] .viewer-hint { color: #111; background: rgba(255,255,255,.5); opacity: .8; }
-.nogl[hidden] { display: none; }
 .nogl { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; }
 .toast {
   position: absolute; top: 14px; left: 50%; transform: translate(-50%, -10px); opacity: 0;
@@ -53,6 +52,15 @@ body[data-bg="light"] .viewer-hint { color: #111; background: rgba(255,255,255,.
 .group { padding: 12px 0; border-bottom: 1px solid var(--line); }
 .group:last-child { border-bottom: 0; }
 h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); margin: 0 0 10px; }
+.h2-note { text-transform: none; letter-spacing: 0; font-weight: 400; margin-left: 6px; }
+.segmented { display: grid; grid-template-columns: 1fr 1fr; background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 3px; gap: 3px; }
+.seg { border: 0; background: transparent; color: var(--muted); font: inherit; font-size: 13px; font-weight: 600; padding: 9px; border-radius: 8px; cursor: pointer; }
+.seg.active { background: var(--accent); color: #fff; }
+.quote-box { margin: 6px 0 10px; display: grid; gap: 8px; }
+.quote-box textarea { width: 100%; font: 12px/1.4 ui-monospace, Menlo, Consolas, monospace; background: var(--panel-2); color: var(--text); border: 1px solid var(--line); border-radius: 10px; padding: 10px; resize: vertical; }
+.contact p { margin: 0 0 3px; font-size: 13px; }
+.accent { color: var(--accent-2); }
+[hidden] { display: none !important; }
 h3 { font-size: 12px; font-weight: 500; color: var(--muted); margin: 12px 0 8px; }
 
 .designs { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; }
@@ -62,6 +70,8 @@ h3 { font-size: 12px; font-weight: 500; color: var(--muted); margin: 12px 0 8px;
   transition: border-color .15s, background .15s;
 }
 .design canvas { width: 56px; height: 56px; color: #d7dae0; }
+.design small { font-size: 9.5px; color: var(--muted); }
+.design.active small { color: #e9b4b7; }
 .design.active { border-color: var(--accent); background: #2a1c1f; }
 .design.active canvas { color: #fff; }
 .design:hover { border-color: #4a5060; }

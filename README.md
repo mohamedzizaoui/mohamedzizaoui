@@ -38,6 +38,23 @@ Andere instellingen: `setAantal` (standaard 4), `extraAutos` (zelfde vorm als de
 
 Eigen wagens: de lijst in het script bevat 31 populaire modellen met steek en naafgat; het formulier "Zoek je velgen" op de site heeft de volledige database (`/model-search` geeft JSON terug). Die kan in een tweede stap gekoppeld worden zodat de gekozen wagen uit de zoekbalk meteen in de weergave staat.
 
+## Stand van zaken 3D (5 oktober 2026)
+
+Controle van alle 32 modellen met close-ups van elk wiel (zie `tools/` en de doorlichting in de sessie):
+
+* **Dubbele velgen opgelost.** Bij Polo, A-Klasse, Clio, Tucson, A3, 1-Reeks, F30 en Octavia bleven losse
+  onderdelen van het originele wiel (velg, remschijf, klauw, 36 tot 45 cm groot) zichtbaar door de spaken.
+  `auto3d.js` doet nu na de herkenning een opruimronde: elk los onderdeel dat binnen het wielvolume ligt
+  wordt verborgen. De drempel voor wielherkenning ging van 45 naar 38 cm; de Clio heeft daardoor nu echte
+  wielposities in plaats van een schatting.
+* **Spookauto's opgelost.** Modellen met één materiaal (Q5, 1-Reeks, Kuga, Tucson, GLC, Corsa, 208, Passat,
+  Tiguan) werden wit en sterk metallic gelakt en oogden half doorschijnend; ze krijgen nu Nardo-grijs met
+  realistische lakparameters (metalness 0,25, clearcoat). De Kia Sportage had "transmission" op de
+  carrosserie en was daardoor écht half transparant; carrosseriematerialen zonder glasnaam worden nu
+  ondoorzichtig gemaakt.
+* Three.js 0.170 staat lokaal onder `vendor/three/` (incl. Draco, KTX2/Basis en Meshopt), de demo werkt dus
+  ook zonder internet.
+
 ## Stand van zaken 3D (28 september 2026)
 
 Alle 31 wagens uit de lijst hebben een echt 3D-model in `demo/3d/modellen/` (samen 54 MB, 0,5 tot 8 MB per wagen). Overzicht van alle zijaanzichten: `test/shots/alle-zij-3.png` (gemaakt door de 3D-pagina zelf, zie `window.__laadAuto` en `/shot` in `serve.mjs`).

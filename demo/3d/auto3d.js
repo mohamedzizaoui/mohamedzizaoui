@@ -24,6 +24,11 @@ export async function laadAuto(loader, id, manifest, auto, pad, leesBand) {
     const ms = Array.isArray(o.material) ? o.material : [o.material];
     for (const mt of ms) {
       if (!mt) continue;
+      const glasNaam = GLASNAAM.test((mt.name || '') + ' ' + (o.name || ''));
+      // carrosserie met "transmission" of lage opacity zonder glas-naam (bv. Kia Sportage): x-ray-effect → ondoorzichtig
+      if (!glasNaam && (mt.transmission > 0 || (mt.transparent && mt.opacity < 0.95 && mt.opacity > 0.05 && isGroot(o)))) {
+        mt.transmission = 0; mt.transparent = false; mt.opacity = 1; mt.depthWrite = true;
+      }
       if (mt.transparent && mt.opacity >= 0.95 && !(mt.transmission > 0)) { mt.transparent = false; mt.depthWrite = true; mt.alphaTest = mt.map ? 0.5 : 0; }
       if (!mt.transparent) mt.side = THREE.DoubleSide;
       mt.needsUpdate = true;
@@ -115,6 +120,9 @@ function voorkantAanPlusZ(obj) {
 }
 
 const WIELNAAM =/wheel|rim|tire|tyre|felge|reifen|\brad\b|wiel|velg|llanta|rueda|roue|jante|disk|disc|колес|диск/i;
+const GLASNAAM = /glass|glas|window|ruit|windshield|windscreen|vidro|vidrio|verre|scheibe|fenster|lamp|light|licht|lens|headl|taill|mirror|spiegel/i;
+// een mesh die een flink deel van de wagen beslaat (carrosseriedeel, geen ruit of lampje)
+function isGroot(o) { const s = new THREE.Vector3(); bbox(o).getSize(s); return Math.max(s.x, s.y, s.z) > 1.2; }
 const BINNENNAAM = /rim|felge|velg|spoke|speich|cap|hub|nut|bolt|lug|disk|disc|brake|calip|rotor|логотип|logo|centre|center/i;
 
 function herkenWielen(wrap, m, auto, leesBand) {
@@ -138,7 +146,7 @@ function herkenWielen(wrap, m, auto, leesBand) {
     for (const o of meshes) {
       const bb = bbox(o), s = new THREE.Vector3(), c = new THREE.Vector3(); bb.getSize(s); bb.getCenter(c);
       const d = Math.max(s.y, s.z), dun = s.x;
-      if (d < 0.45 || d > 0.95) continue;                       // wieldiameter 45 tot 95 cm
+      if (d < 0.38 || d > 0.95) continue;                       // wieldiameter 38 tot 95 cm (ook losse velg of remschijf)
       if (Math.min(s.y, s.z) / d < 0.8) continue;               // rond in het zijvlak
       if (Math.abs(c.y - d / 2) > 0.12) continue;               // raakt de grond
       if (Math.abs(d / 2 - rBand) > 0.12) continue;             // straal past bij de band van deze wagen
@@ -178,6 +186,23 @@ function herkenWielen(wrap, m, auto, leesBand) {
       o.visible = false;                   // het nieuwe wiel (velg én band) vervangt het originele wiel volledig
     }
     // band blijft; als band en velg één mesh zijn, dekt onze schijf de velg af
+  }
+  // Opruimronde: elk los onderdeel dat (bijna) volledig binnen het wielvolume ligt, hoort bij het originele
+  // wiel (velg, remschijf, remklauw, naafdop, wielbouten) en zou anders door onze spaken zichtbaar blijven.
+  // Grote delen (wielkast, spatbord, carrosserie) blijven staan.
+  if (!m.wielen) {
+    for (const o of meshes) {
+      if (!o.visible) continue;
+      const bb = bbox(o), s = new THREE.Vector3(), c = new THREE.Vector3(); bb.getSize(s); bb.getCenter(c);
+      const d = Math.max(s.y, s.z);
+      if (Math.abs(c.x) < 0.35 || d > 1.0 || s.x > 0.6) continue;
+      for (const g of groepen) {
+        if (Math.sign(c.x) !== Math.sign(g.center.x)) continue;
+        const binnen = Math.hypot(c.y - g.center.y, c.z - g.center.z) < g.tireR * 0.55 &&
+          Math.abs(c.x - g.center.x) < 0.3 && d < g.tireR * 2 * 1.08;
+        if (binnen) { o.visible = false; o.userData.velgdeel = true; g.leden.push(o); break; }
+      }
+    }
   }
   return groepen;
 }
@@ -250,7 +275,7 @@ function vindLak(wrap, m, wagenWielen) {
     const wielMeshes = new Set(); (wagenWielen || []).forEach(g => (g.leden || []).forEach(o => wielMeshes.add(o)));
     const rubber = new THREE.MeshStandardMaterial({ color: 0x141517, roughness: 0.85, side: THREE.DoubleSide });
     wielMeshes.forEach(o => { if (o.visible) o.material = rubber; });     // banden in klei-modellen donker
-    const lak = new THREE.MeshPhysicalMaterial({ color: 0xffffff, metalness: 0.6, roughness: 0.35, clearcoat: 1, clearcoatRoughness: 0.05, side: THREE.DoubleSide });
+    const lak = new THREE.MeshPhysicalMaterial({ color: 0x8b8f92, metalness: 0.25, roughness: 0.38, clearcoat: 1, clearcoatRoughness: 0.08, side: THREE.DoubleSide });   // "klei"-model: standaard Nardo-grijs
     wrap.traverse(o => {
       if (!o.isMesh || !o.visible || wielMeshes.has(o)) return;
       const s = new THREE.Vector3(); bbox(o).getSize(s);
@@ -269,7 +294,7 @@ function vindLak(wrap, m, wagenWielen) {
 export function zetLak(wagen, kleur) {
   if (!wagen) return;
   for (const mat of wagen.lakMats) {
-    if (kleur) { mat.color.set(kleur); if (mat.map) { mat.userData.origMap = mat.userData.origMap || mat.map; mat.map = null; } mat.metalness = 0.6; mat.roughness = 0.35; if ('clearcoat' in mat) { mat.clearcoat = 1; mat.clearcoatRoughness = 0.05; } }
+    if (kleur) { mat.color.set(kleur); if (mat.map) { mat.userData.origMap = mat.userData.origMap || mat.map; mat.map = null; } mat.metalness = 0.25; mat.roughness = 0.38; if ('clearcoat' in mat) { mat.clearcoat = 1; mat.clearcoatRoughness = 0.08; } }
     else { mat.color.copy(mat.userData.origKleur); if (mat.userData.origMap) mat.map = mat.userData.origMap; }
     mat.needsUpdate = true;
   }

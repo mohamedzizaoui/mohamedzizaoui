@@ -1,0 +1,6 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "avd-velgen", "runtimeExecutable": "node", "runtimeArgs": ["C:/Users/Mo/Desktop/AVD-Velgen/serve.mjs"], "port": 8190 }
+  ]
+}

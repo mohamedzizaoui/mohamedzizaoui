@@ -1,0 +1,18 @@
+<!doctype html>
+<meta charset="utf-8">
+<style>body{margin:0;background:#fff;font:12px sans-serif}.g{display:grid;grid-template-columns:1fr 1fr;gap:6px}.g div{position:relative}.g span{position:absolute;left:6px;top:4px}svg{display:block;width:100%}</style>
+<div class="g" id="g"></div>
+<script>window.AVD_VELG_OP_AUTO={autoMount:false}</script>
+<script src="../avd-velg-op-auto.js"></script>
+<script>
+  var A = AVDVelgOpAuto, ids = (new URLSearchParams(location.search).get('ids') || 'volkswagen-golf-8-2020,bmw-3-reeks-g20-2019,volkswagen-tiguan-ii-2016-2024,audi-a4-avant-b9-2015,tesla-model-3-2017,tesla-model-y-2020,mini-cooper-f56-2014-2024,peugeot-208-ii-2019').split(',');
+  var inch = +(new URLSearchParams(location.search).get('inch') || 18);
+  A.maakVelg(['../demo/velgen/carbonado-game-1.jpg','../demo/velgen/carbonado-game-2.jpg']).then(function (velg) {
+    document.getElementById('g').innerHTML = ids.map(function (id) {
+      var a = A.autos.filter(function (x) { return x.id === id; })[0];
+      if (!a) return '<div>?' + id + '</div>';
+      var o = A.leesBand(a.band);
+      return '<div><span>' + a.merk + ' ' + a.model + '</span>' + A.tekenAuto(a, { lak: '#eef0f2', remklauw: '#c8102e', verlaging: 0, velg: velg, inch: inch, band: A.bandVoorstel(o, inch, 8), label: a.model }) + '</div>';
+    }).join('');
+  });
+</script>

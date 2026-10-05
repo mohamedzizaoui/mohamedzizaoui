@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="nl-BE">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Velg op je auto · AVD Velgen demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Roboto+Slab:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  :root { --blauw: #419afe; --donker: #2c292d; --tekst: #2c292d; --grijs: #5d5960; --lijn: #e6e8eb; --vlak: #f3f4f6; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.6 "Open Sans", sans-serif; color: var(--tekst); background: #fff; }
+  a { color: inherit; }
+  .demo { background: #fffbe8; border-bottom: 1px solid #f0e2a6; padding: 10px 16px; font-size: 13px; }
+  .demo-in { max-width: 1180px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+  .demo strong { font-weight: 700; }
+  .demo-velgen { display: flex; flex-wrap: wrap; gap: 6px; }
+  .demo-velgen button { display: flex; align-items: center; gap: 6px; min-height: 36px; padding: 3px 10px 3px 4px; border: 1px solid #e3d7a8; border-radius: 999px; background: #fff; font: 600 12px "Open Sans", sans-serif; color: var(--tekst); cursor: pointer; }
+  .demo-velgen button img { width: 28px; height: 28px; object-fit: contain; }
+  .demo-velgen button[aria-pressed="true"] { border-color: var(--blauw); box-shadow: 0 0 0 1px var(--blauw); }
+  .demo-velgen button:focus-visible { outline: 3px solid #1c6fd1; outline-offset: 2px; }
+
+  header.top { background: var(--donker); color: #fff; }
+  .top-in { max-width: 1180px; margin: 0 auto; padding: 10px 16px; display: flex; align-items: center; gap: 16px; }
+  .top-in img { height: 46px; filter: invert(1) brightness(2); }
+  .top-in nav { margin-left: auto; display: flex; gap: 22px; font-weight: 600; font-size: 13px; text-transform: uppercase; }
+  .top-in nav a { text-decoration: none; opacity: .85; }
+  .top-in nav a:hover { opacity: 1; }
+  .band { background: linear-gradient(100deg, #2f86ea, var(--blauw)); color: #fff; }
+  .band-in { max-width: 1180px; margin: 0 auto; padding: 22px 16px; }
+  .band h2 { margin: 0; font: 700 34px/1.1 "Roboto Slab", serif; }
+  .band p { margin: 4px 0 0; font-size: 13px; opacity: .9; }
+
+  main { max-width: 1180px; margin: 0 auto; padding: 28px 16px 60px; }
+  .product { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 36px; }
+  .galerij { border: 1px solid var(--lijn); border-radius: 4px; padding: 20px; position: relative; }
+  .galerij .hoofd { display: block; width: 100%; aspect-ratio: 1; object-fit: contain; }
+  .galerij .duimen { display: flex; gap: 8px; margin-top: 12px; }
+  .galerij .duimen img { width: 64px; height: 64px; object-fit: contain; border: 1px solid var(--lijn); border-radius: 3px; padding: 4px; }
+  .sale { position: absolute; left: 0; top: 16px; background: #fe414c; color: #fff; font-size: 11px; font-weight: 700; padding: 18px 5px; writing-mode: vertical-rl; transform: rotate(180deg); }
+  h1 { margin: 0 0 6px; font: 700 26px/1.3 "Roboto Slab", serif; color: var(--tekst); }
+  .levertijd { font-weight: 700; font-size: 13px; }
+  .intro { color: var(--grijs); font-size: 13px; }
+  .sell-box-form { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: var(--vlak); padding: 18px; margin-top: 16px; }
+  .price-add { font-size: 12px; color: var(--grijs); }
+  .price-new { font: 700 30px/1.2 "Roboto Slab", serif; color: var(--blauw); }
+  .priceVatIncluded { font-size: 11px; color: var(--grijs); }
+  .quantity label { display: block; text-align: center; font-size: 12px; color: var(--grijs); margin-bottom: 4px; }
+  .qty { display: grid; grid-template-columns: 44px 1fr 44px; background: #fff; border-radius: 999px; overflow: hidden; border: 1px solid var(--lijn); }
+  .qty button { border: 0; background: #fff; font-size: 18px; cursor: pointer; min-height: 40px; }
+  .qty input { border: 0; text-align: center; font: 600 15px "Open Sans", sans-serif; width: 100%; }
+  .btn-cart { margin-top: 10px; width: 100%; min-height: 44px; border: 0; border-radius: 999px; background: var(--blauw); color: #fff; font: 700 13px "Open Sans", sans-serif; text-transform: uppercase; cursor: pointer; }
+  .garantie { background: var(--donker); color: #fff; padding: 14px 18px; margin-top: 14px; font-size: 13px; }
+  .garantie strong { font: 700 17px "Roboto Slab", serif; display: block; }
+  .data { margin-top: 36px; }
+  .data-title { font: 700 20px "Roboto Slab", serif; margin-bottom: 10px; }
+  .data ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--lijn); }
+  .data li { border-bottom: 1px solid var(--lijn); padding: 10px 12px 10px 0; }
+  .data-li-title { font-size: 12px; color: var(--grijs); }
+  .toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); background: var(--donker); color: #fff; padding: 12px 18px; border-radius: 8px; opacity: 0; transition: .25s; pointer-events: none; font-weight: 600; }
+  .toast.is-zichtbaar { opacity: 1; transform: translate(-50%, 0); }
+  @media (max-width: 820px) {
+    .product { grid-template-columns: 1fr; gap: 20px; }
+    .top-in nav { display: none; }
+    .band h2 { font-size: 26px; }
+    .data ul { grid-template-columns: repeat(2, 1fr); }
+    .sell-box-form { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+  <div class="demo" role="region" aria-label="Demo">
+    <div class="demo-in">
+      <strong>Demo van "Bekijk op je auto"</strong>
+      <span>Kies een velg uit de winkel:</span>
+      <div class="demo-velgen" id="demo-velgen"></div>
+    </div>
+  </div>
+
+  <header class="top">
+    <div class="top-in">
+      <img src="logo.svg" alt="AVD Velgen">
+      <nav aria-label="Hoofdmenu"><a href="#">Gratis verzending</a><a href="#">Aluvelgen</a><a href="#">Sale</a><a href="#">Breedset</a><a href="#">Contact</a></nav>
+    </div>
+  </header>
+  <div class="band"><div class="band-in"><h2>Aluvelgen</h2><p>Home &gt; Producten &gt; <span id="kruimel"></span></p></div></div>
+
+  <main id="product"></main>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+  var VELGEN = [
+    { titel: "Aluvelgen 18` 5x112 Carbonado Game BFP", prijs: "191,24", fotos: ["velgen/carbonado-game-1.jpg", "velgen/carbonado-game-2.jpg"], s: { Maat: "18", Breedte: "8.00", Steek: "5x112", ET: "35", Kleur: "Zwart - Gepolijst", Naafgat: "66.5", Fabrikant: "Carbonado" } },
+    { titel: "Aluvelgen 20` 5x112 Carbonado Rebellion BFP", prijs: "273,29", fotos: ["velgen/carbonado-rebellion.jpg"], s: { Maat: "20", Breedte: "9.50", Steek: "5x112", ET: "45", Kleur: "Zwart - Glans", Naafgat: "66.5", Fabrikant: "Carbonado" } },
+    { titel: "Aluvelgen 17` 5x112 MAM RS4 PFP", prijs: "189,72", fotos: ["velgen/mam-rs4.jpg"], s: { Maat: "17", Breedte: "7.50", Steek: "5x112", ET: "35", Kleur: "Grafiet - Gepolijst", Naafgat: "66.5", Fabrikant: "MAM Leichtmetallräder" } },
+    { titel: "Aluvelgen 19` 5x114,3 Borbet LX19 BGRR", prijs: "255,60", fotos: ["velgen/borbet-lx19.jpg"], s: { Maat: "19", Breedte: "8.00", Steek: "5x114.3", ET: "45", Kleur: "Zwart - Glans", Naafgat: "72.6", Fabrikant: "Borbet" } },
+    { titel: "Aluvelgen 17` 5x112 Carmani 14 Paul HG", prijs: "189,30", fotos: ["velgen/carmani-14.png"], s: { Maat: "17", Breedte: "7.50", Steek: "5x112", ET: "35", Kleur: "Grafiet - Glans", Naafgat: "66.5", Fabrikant: "Carmani" } },
+    { titel: "Aluvelgen 21` 5x120 Keskin KT17 Hurricane MBFP", prijs: "331,54", fotos: ["velgen/keskin-kt17.jpg"], s: { Maat: "21", Breedte: "9.50", Steek: "5x120", ET: "38", Kleur: "Zwart - Gepolijst", Naafgat: "74.1", Fabrikant: "Keskin Tuning" } },
+    { titel: "Aluvelgen 18` 5x112 Keskin KT20 BPRI", prijs: "231,61", fotos: ["velgen/keskin-kt20.jpg"], s: { Maat: "18", Breedte: "8.00", Steek: "5x112", ET: "30", Kleur: "Zwart - Glans", Naafgat: "72.6", Fabrikant: "Keskin Tuning" } },
+    { titel: "Aluvelgen 17` 4x108 MAM W4 SL", prijs: "168,11", fotos: ["velgen/mam-w4.jpg"], s: { Maat: "17", Breedte: "7.00", Steek: "4x108", ET: "35", Kleur: "Zilver - Glans", Naafgat: "63.4", Fabrikant: "MAM Leichtmetallräder" } },
+    { titel: "Aluvelgen 18` 5x114,3 79wheels seventy9 SV-C BG", prijs: "202,58", fotos: ["velgen/seventy9.jpg"], s: { Maat: "18", Breedte: "8.00", Steek: "5x114.3", ET: "40", Kleur: "Zwart - Glans", Naafgat: "73.1", Fabrikant: "Seventy9" } }
+  ];
+
+  // In de echte winkel doet de bestaande winkelwagenknop dit; in de demo tonen we een melding.
+  window.AVD_VELG_OP_AUTO = {
+    url3d: '3d/',
+    onInWinkelwagen: function (product, aantal, auto) {
+      var t = document.getElementById('toast');
+      t.textContent = aantal + ' × ' + product.naam + ' in je winkelwagen';
+      t.classList.add('is-zichtbaar');
+      setTimeout(function () { t.classList.remove('is-zichtbaar'); }, 2600);
+    }
+  };
+
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+
+  function toon(i) {
+    var v = VELGEN[i];
+    document.getElementById('kruimel').textContent = v.titel;
+    document.title = v.titel + ' · AVD Velgen demo';
+    // Zelfde opbouw en klassen als de productpagina op avdvelgen.be, zodat het script zijn gegevens zelf vindt
+    document.getElementById('product').innerHTML =
+      '<div class="product">' +
+        '<div class="galerij"><span class="sale">Sale</span>' +
+          '<img class="product-image hoofd" src="' + v.fotos[0] + '" alt="' + esc(v.titel) + '">' +
+          '<div class="duimen">' + v.fotos.map(function (f, k) { return k ? '<img class="product-image" src="' + f + '" alt="">' : '<img src="' + f + '" alt="">'; }).join('') + '</div>' +
+        '</div>' +
+        '<div>' +
+          '<h1 class="h1">' + esc(v.titel) + '</h1>' +
+          '<p class="levertijd">Levertijd 4 tot 10 werkdagen</p>' +
+          '<p class="intro">Nieuw set velgen zonder banden. De set bevat alle accessoires die de fabrikant toevoegt, de setprijs voor velgen is inclusief BTW.</p>' +
+          '<div class="sell-box-form sell-box-form-table">' +
+            '<div><div class="price-add">Prijs per 1 stuk</div><span class="price price-new shop-product-price-gross"><span class="val">€&nbsp;' + v.prijs + '</span></span><br><span class="priceVatIncluded">inclusief BTW</span></div>' +
+            '<div><div class="form-group quantity"><label for="productPageQuantity">selecteer aantal</label>' +
+              '<div class="qty"><button type="button" aria-label="Eén minder" onclick="var q=document.getElementById(\'productPageQuantity\');q.value=Math.max(1,q.value-1)">−</button><input id="productPageQuantity" value="1" inputmode="numeric"><button type="button" aria-label="Eén meer" onclick="var q=document.getElementById(\'productPageQuantity\');q.value=+q.value+1">+</button></div></div>' +
+              '<button type="button" class="btn btn-primary btn-cart">In de winkelwagen</button></div>' +
+          '</div>' +
+          '<div class="garantie"><strong>Fabrikant garantie</strong>24 maanden garantie · Compatibel met TPMS-sensor · Gratis verzending binnen België en Nederland</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="data"><div class="data-title">Technische gegevens</div><ul>' +
+        Object.keys(v.s).map(function (k) { return '<li><div class="data-li"><div class="data-li-title">' + k + ':</div> ' + esc(v.s[k]) + '</div></li>'; }).join('') +
+      '</ul></div>';
+    document.querySelectorAll('#demo-velgen button').forEach(function (b, k) { b.setAttribute('aria-pressed', String(k === i)); });
+    if (window.AVDVelgOpAuto) window.AVDVelgOpAuto.plaatsKnop();
+  }
+
+  document.getElementById('demo-velgen').innerHTML = VELGEN.map(function (v, i) {
+    var kort = v.titel.replace(/^Aluvelgen\s+/, '').replace(/\s+\S+$/, '');
+    return '<button type="button" data-i="' + i + '"><img src="' + v.fotos[v.fotos.length - 1] + '" alt="">' + esc(kort) + '</button>';
+  }).join('');
+  document.getElementById('demo-velgen').addEventListener('click', function (e) {
+    var b = e.target.closest('button');
+    if (b) toon(+b.getAttribute('data-i'));
+  });
+  toon(0);
+</script>
+<script src="../avd-velg-op-auto.js"></script>
+</body>
+</html>

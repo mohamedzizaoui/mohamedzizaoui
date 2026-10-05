@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="nl-BE">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Velgensimulator · AVD Velgen</title>
+<meta name="description" content="Kies je wagen en bekijk elke velg uit de winkel in 3D: in de studio of gemonteerd op jouw auto, in de juiste maat en afwerking.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Roboto+Slab:wght@400;700&display=swap" rel="stylesheet">
+<link rel="icon" href="../logo.svg">
+<style>
+  :root {
+    --blauw: #419afe; --blauw-donker: #1c6fd1; --donker: #2c292d; --tekst: #2c292d; --grijs: #5d5960; --zacht: #8a868d;
+    --lijn: #e3e6ea; --vlak: #f4f5f7; --wit: #fff; --rood: #c8102e; --groen: #1d7a46; --amber: #a86400;
+    --paneel: 392px; --radius: 12px; --focus: 0 0 0 3px #fff, 0 0 0 5px var(--blauw-donker);
+    --ease: cubic-bezier(.2,.8,.2,1);
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; font: 14px/1.5 "Open Sans", system-ui, sans-serif; color: var(--tekst); background: var(--vlak); display: grid; grid-template-rows: auto 1fr; -webkit-font-smoothing: antialiased; }
+  ::selection { background: #cfe4ff; color: var(--donker); }
+  :focus-visible { outline: none; box-shadow: var(--focus); }
+  button { font: inherit; color: inherit; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  /* kop */
+  .kop { display: flex; align-items: center; gap: 18px; padding: 0 22px; height: 60px; background: var(--donker); color: #fff; }
+  .kop img { height: 34px; filter: invert(1) brightness(2); }
+  .kop h1 { margin: 0; font: 700 17px/1.2 "Roboto Slab", serif; letter-spacing: .005em; }
+  .kop p { margin: 0; font-size: 12.5px; color: #c8c4ca; }
+  .kop .titel { display: flex; flex-direction: column; gap: 1px; border-left: 1px solid rgba(255,255,255,.18); padding-left: 18px; }
+  .kop a.terug { margin-left: auto; color: #fff; text-decoration: none; font-weight: 600; font-size: 13px; opacity: .85; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; }
+  .kop a.terug:hover { opacity: 1; text-decoration: underline; text-underline-offset: 3px; }
+
+  /* indeling */
+  .lijf { display: grid; grid-template-columns: minmax(0, 1fr) var(--paneel); min-height: 0; }
+  .podium { position: relative; min-height: 0; background: radial-gradient(120% 90% at 50% 38%, #f7f8fa 0%, #e6e9ed 55%, #d9dde2 100%); }
+  .podium canvas { display: block; width: 100%; height: 100%; outline: none; touch-action: none; }
+  .podium canvas:focus-visible { box-shadow: inset 0 0 0 3px var(--blauw-donker); }
+
+  .segment { position: absolute; left: 16px; top: 16px; display: inline-flex; padding: 4px; border-radius: 999px; background: rgba(255,255,255,.86); backdrop-filter: blur(10px); box-shadow: 0 6px 20px -10px rgba(20,24,30,.45); }
+  .segment button { min-height: 40px; padding: 0 16px; border: 0; border-radius: 999px; background: transparent; font-weight: 600; color: var(--grijs); cursor: pointer; transition: background .25s var(--ease), color .25s var(--ease); }
+  .segment button[aria-pressed="true"] { background: var(--donker); color: #fff; }
+  .segment button:not([aria-pressed="true"]):hover { color: var(--donker); }
+
+  .hoeken { position: absolute; left: 16px; bottom: 16px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .hoeken button { min-height: 38px; padding: 0 13px; border: 1px solid rgba(44,41,45,.14); border-radius: 999px; background: rgba(255,255,255,.9); font-weight: 600; font-size: 12.5px; color: var(--donker); cursor: pointer; transition: border-color .2s, background .2s; }
+  .hoeken button:hover { border-color: var(--blauw); }
+  .hoeken button[aria-pressed="true"] { background: var(--blauw); border-color: var(--blauw); color: #fff; }
+
+  .laden { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; background: rgba(236,238,241,.78); backdrop-filter: blur(6px); color: var(--grijs); font-weight: 600; opacity: 0; pointer-events: none; transition: opacity .35s var(--ease); }
+  .laden.aan { opacity: 1; pointer-events: auto; }
+  .laden .ring { width: 46px; height: 46px; margin: 0 auto 12px; border-radius: 50%; border: 3px solid #cfd4da; border-top-color: var(--blauw); animation: draai 1s linear infinite; }
+  .laden small { display: block; margin-top: 6px; font-weight: 400; color: var(--zacht); }
+  .laden .fout { color: var(--rood); }
+  @keyframes draai { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .laden .ring { animation-duration: 3s; } }
+
+  .bron { position: absolute; right: 16px; bottom: 16px; max-width: min(60%, 520px); font-size: 11.5px; color: var(--grijs); background: rgba(255,255,255,.82); padding: 5px 10px; border-radius: 8px; }
+  .bron a { color: var(--blauw-donker); }
+  .tip { position: absolute; right: 16px; top: 22px; font-size: 12px; color: var(--grijs); }
+
+  /* paneel */
+  .paneel { background: var(--wit); border-left: 1px solid var(--lijn); overflow: auto; overscroll-behavior: contain; display: flex; flex-direction: column; scrollbar-width: thin; scrollbar-color: #c9ced4 transparent; }
+  .paneel::-webkit-scrollbar { width: 8px; } .paneel::-webkit-scrollbar-thumb { background: #c9ced4; border-radius: 8px; }
+  .stap { padding: 20px 22px 18px; border-bottom: 1px solid var(--lijn); }
+  .stap h2 { margin: 0 0 12px; font: 700 15px/1.3 "Roboto Slab", serif; display: flex; align-items: baseline; gap: 10px; }
+  .stap h2 .nu { margin-left: auto; font: 600 12.5px "Open Sans", sans-serif; color: var(--zacht); }
+  .veld { display: block; margin-bottom: 10px; }
+  .veld span { display: block; font-size: 12px; color: var(--grijs); margin-bottom: 4px; }
+  select { width: 100%; min-height: 44px; padding: 0 38px 0 12px; border: 1px solid #cfd4da; border-radius: 10px; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%232c292d' stroke-width='1.8'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E") no-repeat right 12px center; appearance: none; font: 14px "Open Sans", sans-serif; color: var(--donker); }
+  select:hover { border-color: #aab1b9; }
+  .twee { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .feit { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: var(--grijs); }
+  .feit b { color: var(--donker); font-weight: 600; }
+
+  /* velgenstrook */
+  .strook { display: flex; gap: 10px; overflow-x: auto; padding: 4px 22px 14px; margin: 0 -22px; scroll-snap-type: x proximity; scrollbar-width: thin; scrollbar-color: #c9ced4 transparent; }
+  .strook::-webkit-scrollbar { height: 8px; } .strook::-webkit-scrollbar-thumb { background: #c9ced4; border-radius: 8px; }
+  .velg { position: relative; flex: 0 0 132px; scroll-snap-align: start; }
+  .velg input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .velg span.kaart { display: block; border: 1px solid var(--lijn); border-radius: var(--radius); padding: 10px 10px 9px; background: #fff; cursor: pointer; transition: border-color .2s, transform .25s var(--ease), box-shadow .25s var(--ease); }
+  .velg span.kaart:hover { transform: translateY(-2px); box-shadow: 0 10px 24px -14px rgba(20,24,30,.5); }
+  .velg img { display: block; width: 100%; aspect-ratio: 1; object-fit: contain; margin-bottom: 8px; }
+  .velg .merk { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--zacht); }
+  .velg .naam { display: block; font-weight: 700; font-size: 13px; line-height: 1.25; color: var(--donker); min-height: 2.5em; }
+  .velg .prijs { display: block; margin-top: 4px; font-size: 12.5px; color: var(--grijs); font-variant-numeric: tabular-nums; }
+  .velg .past { position: absolute; right: 8px; top: 8px; font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 999px; background: #e8f5ec; color: var(--groen); }
+  .velg .past.niet { background: #fdecef; color: var(--rood); }
+  .velg input:checked + span.kaart { border-color: var(--blauw); box-shadow: 0 0 0 1px var(--blauw), 0 10px 24px -14px rgba(28,111,209,.6); }
+  .velg input:focus-visible + span.kaart { box-shadow: var(--focus); }
+
+  /* maten, stalen */
+  .pillen { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pil { position: relative; }
+  .pil input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .pil span { display: inline-flex; align-items: center; justify-content: center; min-width: 52px; min-height: 40px; padding: 0 12px; border: 1px solid #cfd4da; border-radius: 999px; background: #fff; font-weight: 600; cursor: pointer; font-variant-numeric: tabular-nums; transition: border-color .2s, background .2s, color .2s; }
+  .pil span:hover { border-color: var(--blauw); }
+  .pil input:checked + span { background: var(--donker); border-color: var(--donker); color: #fff; }
+  .pil input:focus-visible + span { box-shadow: var(--focus); }
+  .pil input:disabled + span { opacity: .4; cursor: not-allowed; }
+  .stalen { display: flex; flex-wrap: wrap; gap: 10px; }
+  .staal { position: relative; }
+  .staal input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .staal span.bol { display: block; width: 40px; height: 40px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px #c9ced4, inset 0 -8px 12px rgba(0,0,0,.25), inset 0 6px 10px rgba(255,255,255,.35); cursor: pointer; transition: transform .2s var(--ease), box-shadow .2s; }
+  .staal span.bol:hover { transform: scale(1.06); }
+  .staal input:checked + span.bol { box-shadow: 0 0 0 2px var(--blauw), inset 0 -8px 12px rgba(0,0,0,.25), inset 0 6px 10px rgba(255,255,255,.35); }
+  .staal input:focus-visible + span.bol { box-shadow: var(--focus); }
+  .staal .regenboog { background: conic-gradient(#e33, #fc3, #3c6, #36c, #e33); }
+  .gekozen { margin-top: 8px; font-size: 12.5px; color: var(--grijs); min-height: 1.2em; }
+
+  /* samenvatting */
+  .samen { padding: 20px 22px 24px; margin-top: auto; background: var(--vlak); }
+  .samen .regel { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; padding: 5px 0; border-bottom: 1px dashed #d8dce1; }
+  .samen .regel:last-of-type { border-bottom: 0; }
+  .samen .regel b { font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+  .waarschuwing { margin: 10px 0 0; padding: 10px 12px; border-radius: 10px; background: #fff6e5; color: var(--amber); font-size: 12.5px; line-height: 1.45; }
+  .waarschuwing:empty { display: none; }
+  .prijsrij { display: flex; align-items: baseline; justify-content: space-between; margin: 14px 0 10px; }
+  .prijsrij .totaal { font: 700 28px/1 "Roboto Slab", serif; color: var(--blauw-donker); font-variant-numeric: tabular-nums; }
+  .prijsrij small { color: var(--zacht); font-size: 12px; }
+  .cta { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 50px; border: 0; border-radius: 999px; background: var(--blauw); color: #fff; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: .02em; cursor: pointer; transition: background .2s, transform .15s var(--ease); }
+  .cta:hover { background: var(--blauw-donker); }
+  .cta:active { transform: scale(.985); }
+  .rij { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+  .tweede { min-height: 44px; border: 1px solid #cfd4da; border-radius: 999px; background: #fff; font-weight: 600; font-size: 13px; cursor: pointer; transition: border-color .2s; }
+  .tweede:hover { border-color: var(--blauw); }
+  .toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 16px); background: var(--donker); color: #fff; padding: 12px 18px; border-radius: 10px; opacity: 0; transition: .3s var(--ease); pointer-events: none; font-weight: 600; box-shadow: 0 14px 30px -14px rgba(0,0,0,.6); }
+  .toast.aan { opacity: 1; transform: translate(-50%, 0); }
+
+  @media (max-width: 960px) {
+    .lijf { grid-template-columns: 1fr; grid-template-rows: 52dvh 1fr; }
+    .paneel { border-left: 0; border-top: 1px solid var(--lijn); }
+    .bron { display: none; }
+    .tip { display: none; }
+    .kop { padding: 0 16px; gap: 12px; } .kop p { display: none; } .kop .titel { padding-left: 12px; }
+    .stap, .samen { padding-left: 16px; padding-right: 16px; }
+    .strook { padding-left: 16px; padding-right: 16px; margin: 0 -16px; }
+    .segment { left: 12px; top: 12px; }
+    .hoeken { left: 12px; bottom: 12px; right: 12px; }
+  }
+</style>
+</head>
+<body>
+<header class="kop">
+  <img src="../logo.svg" alt="AVD Velgen">
+  <div class="titel"><h1>Velgensimulator</h1><p>Elke velg uit de winkel in 3D, op jouw wagen</p></div>
+  <a class="terug" href="../">Naar de productpagina</a>
+</header>
+
+<div class="lijf">
+  <section class="podium" aria-label="3D-weergave">
+    <canvas id="c" tabindex="0" aria-label="3D-weergave van de gekozen velg. Sleep om te draaien, scroll om te zoomen."></canvas>
+    <div class="segment" role="group" aria-label="Weergave">
+      <button type="button" data-weergave="studio" aria-pressed="true">Studio</button>
+      <button type="button" data-weergave="auto" aria-pressed="false">Op je wagen</button>
+    </div>
+    <p class="tip">Sleep om te draaien · scroll om te zoomen</p>
+    <div class="hoeken" id="hoeken" role="group" aria-label="Camerastandpunt"></div>
+    <div class="laden" id="laden" aria-live="polite"></div>
+    <div class="bron" id="bron"></div>
+  </section>
+
+  <aside class="paneel" aria-label="Instellingen">
+    <div class="stap">
+      <h2>Jouw wagen <span class="nu" id="wagen-nu"></span></h2>
+      <div class="twee">
+        <label class="veld"><span>Merk</span><select id="merk"></select></label>
+        <label class="veld"><span>Model</span><select id="model"></select></label>
+      </div>
+      <div class="feit" id="wagen-feit"></div>
+    </div>
+
+    <div class="stap">
+      <h2>Velg <span class="nu" id="velg-nu"></span></h2>
+      <div class="strook" id="velgen" role="radiogroup" aria-label="Velg kiezen"></div>
+    </div>
+
+    <div class="stap">
+      <h2>Maat <span class="nu" id="maat-nu"></span></h2>
+      <div class="pillen" id="maten" role="radiogroup" aria-label="Velgmaat in inch"></div>
+      <p class="gekozen" id="band-tekst"></p>
+    </div>
+
+    <div class="stap">
+      <h2>Afwerking <span class="nu" id="afw-nu"></span></h2>
+      <div class="stalen" id="afwerkingen" role="radiogroup" aria-label="Afwerking van de velg"></div>
+    </div>
+
+    <div class="stap">
+      <h2>Remklauw <span class="nu" id="klauw-nu"></span></h2>
+      <div class="stalen" id="klauwen" role="radiogroup" aria-label="Kleur van de remklauw"></div>
+    </div>
+
+    <div class="stap" id="stap-lak">
+      <h2>Lak van de wagen <span class="nu" id="lak-nu"></span></h2>
+      <div class="stalen" id="lakken" role="radiogroup" aria-label="Lakkleur van de wagen"></div>
+    </div>
+
+    <div class="samen">
+      <div class="regel"><span>Velg</span><b id="s-velg"></b></div>
+      <div class="regel"><span>Maat en breedte</span><b id="s-maat"></b></div>
+      <div class="regel"><span>Steek · ET · naafgat</span><b id="s-steek"></b></div>
+      <div class="regel"><span>Band (voorstel)</span><b id="s-band"></b></div>
+      <p class="waarschuwing" id="waarschuwing"></p>
+      <div class="prijsrij"><div><span class="totaal" id="s-prijs"></span> <small>set van 4, incl. btw</small></div><small id="s-stuk"></small></div>
+      <button type="button" class="cta" id="winkelwagen">Set van 4 in winkelwagen</button>
+      <div class="rij">
+        <button type="button" class="tweede" id="bewaar">Afbeelding bewaren</button>
+        <button type="button" class="tweede" id="deel">Link kopiëren</button>
+      </div>
+    </div>
+  </aside>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>window.AVD_VELG_OP_AUTO = { autoMount: false };</script>
+<script src="../../avd-velg-op-auto.js"></script>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
+<script type="module" src="app.js"></script>
+</body>
+</html>

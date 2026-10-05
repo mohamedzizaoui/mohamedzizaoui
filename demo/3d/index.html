@@ -1,0 +1,636 @@
+<!doctype html>
+<html lang="nl-BE">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Velg in 3D · AVD Velgen demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Roboto+Slab:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root { --blauw: #419afe; --donker: #2c292d; --grijs: #5d5960; --lijn: #e6e8eb; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; font: 14px/1.5 "Open Sans", sans-serif; color: var(--donker); background: #fff; display: grid; grid-template-rows: auto 1fr; }
+  header { display: flex; align-items: center; gap: 14px; padding: 12px 20px; background: var(--donker); color: #fff; }
+  header .acc { font: 300 40px/1 "Roboto Slab", serif; color: var(--blauw); margin-top: -6px; }
+  header p { margin: 0; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: #b9b5bb; }
+  header h1 { margin: 0; font: 700 19px/1.25 "Roboto Slab", serif; }
+  header a { margin-left: auto; color: #fff; font-size: 13px; }
+  .lijf { display: grid; grid-template-columns: minmax(0, 1fr) 340px; min-height: 0; }
+  .podium { position: relative; background: #e3e6ea; min-height: 0; }
+  canvas { display: block; width: 100%; height: 100%; outline: none; touch-action: none; }
+  .laden { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; background: rgba(227,230,234,.92); color: var(--grijs); font-weight: 600; transition: opacity .4s; }
+  .laden.weg { opacity: 0; pointer-events: none; }
+  .laden code { display: block; margin-top: 8px; font-weight: 400; font-size: 12px; color: var(--donker); }
+  .hoeken { position: absolute; left: 12px; bottom: 12px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .hoeken button, .tweede { min-height: 36px; padding: 0 12px; border: 1px solid #cfd4da; border-radius: 6px; background: rgba(255,255,255,.92); font: 600 12.5px "Open Sans", sans-serif; color: var(--donker); cursor: pointer; }
+  .hoeken button:hover, .tweede:hover { border-color: var(--blauw); }
+  .hoeken button[aria-pressed="true"] { background: var(--blauw); color: #fff; border-color: var(--blauw); }
+  .tip { position: absolute; right: 12px; top: 12px; font-size: 12px; color: var(--grijs); background: rgba(255,255,255,.8); padding: 4px 10px; border-radius: 6px; }
+  .bron { position: absolute; left: 12px; top: 12px; max-width: 60%; font-size: 11.5px; color: var(--grijs); background: rgba(255,255,255,.85); padding: 4px 10px; border-radius: 6px; }
+  .bron a { color: #1c6fd1; }
+  aside { border-left: 1px solid var(--lijn); background: #fafbfc; overflow: auto; padding: 16px 20px 20px; display: flex; flex-direction: column; gap: 16px; }
+  fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+  legend, .titel { padding: 0; margin: 0 0 8px; font: 700 13px "Roboto Slab", serif; text-transform: uppercase; letter-spacing: .04em; }
+  .veld { display: block; margin-bottom: 8px; }
+  .veld span { display: block; font-size: 12px; color: var(--grijs); margin-bottom: 3px; }
+  select { width: 100%; min-height: 44px; padding: 0 36px 0 12px; border: 1px solid #cfd4da; border-radius: 6px; background: #fff; font: 14px "Open Sans", sans-serif; color: var(--donker); }
+  .velgen { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .velgen label { position: relative; }
+  .velgen input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .velgen span { display: block; border: 1px solid var(--lijn); border-radius: 8px; padding: 6px 4px 4px; background: #fff; text-align: center; font-size: 11px; line-height: 1.25; cursor: pointer; }
+  .velgen img { display: block; width: 100%; aspect-ratio: 1; object-fit: contain; margin-bottom: 4px; }
+  .velgen input:checked + span { border-color: var(--blauw); box-shadow: 0 0 0 1px var(--blauw); }
+  .velgen input:focus-visible + span, .staal input:focus-visible + span, select:focus-visible, button:focus-visible { outline: 3px solid #1c6fd1; outline-offset: 2px; }
+  .stalen { display: flex; flex-wrap: wrap; gap: 8px; }
+  .staal { position: relative; }
+  .staal input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .staal span { display: block; width: 36px; height: 36px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px #c9ced4, inset 0 -6px 10px rgba(0,0,0,.18); cursor: pointer; }
+  .staal input:checked + span { box-shadow: 0 0 0 2px var(--blauw), inset 0 -6px 10px rgba(0,0,0,.18); }
+  .schuif { display: block; margin-bottom: 10px; }
+  .schuif span { display: flex; justify-content: space-between; font-size: 12px; color: var(--grijs); }
+  .schuif input { width: 100%; accent-color: var(--blauw); }
+  .kader { border-radius: 8px; background: #fff; border: 1px solid var(--lijn); padding: 12px 14px; font-size: 12.5px; color: var(--grijs); }
+  .kader b { color: var(--donker); }
+  .kader ul { margin: 6px 0 0; padding-left: 18px; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .cta { display: block; width: 100%; min-height: 46px; border: 0; border-radius: 6px; background: var(--blauw); color: #fff; font: 700 14px "Open Sans", sans-serif; text-transform: uppercase; cursor: pointer; }
+  .rij { display: flex; gap: 8px; }
+  .rij .tweede { flex: 1; }
+  @media (max-width: 900px) {
+    .lijf { grid-template-columns: 1fr; grid-template-rows: 55vh 1fr; }
+    aside { border-left: 0; border-top: 1px solid var(--lijn); }
+    .bron { display: none; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <span class="acc" aria-hidden="true">{</span>
+  <div><p>Bekijk op je auto · 3D</p><h1 id="titel">Velg in 3D</h1></div>
+  <a href="../">← terug naar de productpagina</a>
+</header>
+<div class="lijf">
+  <div class="podium">
+    <canvas id="c" aria-label="3D-weergave van de auto met de gekozen velg. Sleep om te draaien, scroll om te zoomen."></canvas>
+    <div class="laden" id="laden">3D-model laden…</div>
+    <div class="bron" id="bron"></div>
+    <div class="hoeken" role="group" aria-label="Camerastandpunt">
+      <button type="button" data-hoek="zij" aria-pressed="true">Zijkant</button>
+      <button type="button" data-hoek="voor" aria-pressed="false">Driekwart voor</button>
+      <button type="button" data-hoek="achter" aria-pressed="false">Driekwart achter</button>
+      <button type="button" data-hoek="wiel" aria-pressed="false">Wiel</button>
+      <button type="button" id="draai" aria-pressed="true">Draaien</button>
+    </div>
+    <div class="tip">Sleep om te draaien · scroll om te zoomen</div>
+  </div>
+  <aside>
+    <fieldset><legend>Jouw auto</legend>
+      <label class="veld"><span>Merk</span><select id="merk"></select></label>
+      <label class="veld"><span>Model</span><select id="model"></select></label>
+    </fieldset>
+    <fieldset><legend>Velg</legend><div class="velgen" id="velgen"></div></fieldset>
+    <fieldset><legend>Kleur</legend><div class="stalen" id="lakken"></div></fieldset>
+    <fieldset><legend>Remklauwen</legend><div class="stalen" id="klauwen"></div></fieldset>
+    <label class="schuif"><span>Velgmaat op de wagen <output id="inch-uit">19"</output></span><input type="range" id="inch" min="16" max="22" step="1" value="19"></label>
+    <div class="kader" id="info"></div>
+    <div class="kader" id="model-info"></div>
+    <button type="button" class="cta" id="bewaar">Afbeelding bewaren</button>
+    <div class="rij"><button type="button" class="tweede" id="omdraaien">Wagen staat achterstevoren</button><button type="button" class="tweede" id="wielen-toon">Toon wielherkenning</button></div>
+  </aside>
+</div>
+
+<script>window.AVD_VELG_OP_AUTO = { autoMount: false };</script>
+<script src="../../avd-velg-op-auto.js"></script>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+const VELGEN = [
+  { naam: 'Carbonado Game BFP', inch: 18, fotos: ['../velgen/carbonado-game-1.jpg', '../velgen/carbonado-game-2.jpg'] },
+  { naam: 'Carbonado Rebellion BFP', inch: 20, fotos: ['../velgen/carbonado-rebellion.jpg'] },
+  { naam: 'MAM RS4 PFP', inch: 17, fotos: ['../velgen/mam-rs4.jpg'] },
+  { naam: 'Borbet LX19 BGRR', inch: 19, fotos: ['../velgen/borbet-lx19.jpg'] },
+  { naam: 'Carmani 14 Paul HG', inch: 17, fotos: ['../velgen/carmani-14.png'] },
+  { naam: 'Keskin KT17 Hurricane', inch: 21, fotos: ['../velgen/keskin-kt17.jpg'] },
+  { naam: 'Keskin KT20 BPRI', inch: 18, fotos: ['../velgen/keskin-kt20.jpg'] },
+  { naam: 'MAM W4 SL', inch: 17, fotos: ['../velgen/mam-w4.jpg'] },
+  { naam: 'seventy9 SV-C BG', inch: 18, fotos: ['../velgen/seventy9.jpg'] }
+];
+const LAKKEN = [['Wit', '#eef0f2'], ['Zwart', '#101113'], ['Nardo grijs', '#8b8f92'], ['Zilver', '#b8bdc3'], ['Blauw', '#1f4f9c'], ['Rood', '#a8121e'], ['Donkergroen', '#1e4436'], ['Zandbeige', '#b7a58a'], ['Origineel', null]];
+const KLAUWEN = [['Standaard', '#55595f'], ['Rood', '#c8102e'], ['Geel', '#f0b400'], ['Blauw', '#1d5fd6']];
+
+const A = window.AVDVelgOpAuto;
+const AUTOS = A.autos;
+const MANIFEST = (await (await fetch('../../tools/modellen.json')).json()).modellen;
+const q = new URLSearchParams(location.search);
+
+const velgParam = q.get('velg') || '0';
+let velgIdx = /^\d+$/.test(velgParam) ? Math.min(VELGEN.length - 1, +velgParam)
+  : Math.max(0, VELGEN.findIndex(v => velgParam.toLowerCase().includes(v.naam.toLowerCase()) || v.naam.toLowerCase().includes(velgParam.toLowerCase())));
+let lak = LAKKEN[+(q.get('lak') || 0)] || LAKKEN[0];
+let klauw = KLAUWEN[0];
+let inch = +(q.get('inch') || VELGEN[velgIdx].inch || 19);
+let autoId = q.get('auto') || localStorage.getItem('avdv:auto3d') || 'volkswagen-golf-8-2020';
+if (!MANIFEST[autoId]) autoId = Object.keys(MANIFEST).find(id => bestaat(id)) || 'demo-ferrari-458';
+let toonWielen = false;
+
+function bestaat(id) { return true; }  // beschikbaarheid blijkt bij het laden (404 → melding)
+function autoMetId(id) { return AUTOS.find(a => a.id === id) || { id, merk: 'Demo', model: (MANIFEST[id] || {}).titel || id, L: 4500, WB: 2650, H: 1400, band: '225/45R17' }; }
+
+/* -------- UI -------- */
+const merkEl = document.getElementById('merk'), modelEl = document.getElementById('model');
+const merken = [...new Set(AUTOS.map(a => a.merk))].sort();
+merkEl.innerHTML = merken.map(m => `<option>${m}</option>`).join('') + '<option value="__demo">Demo</option>';
+function vulModellen() {
+  const merk = merkEl.value;
+  const lijst = merk === '__demo' ? [{ id: 'demo-ferrari-458', model: 'Ferrari 458 Italia (three.js-voorbeeld)' }] : AUTOS.filter(a => a.merk === merk);
+  modelEl.innerHTML = lijst.map(a => `<option value="${a.id}">${a.model}${MANIFEST[a.id] ? '' : '  (nog geen 3D-model)'}</option>`).join('');
+}
+const velgenEl = document.getElementById('velgen');
+velgenEl.innerHTML = VELGEN.map((v, i) => `<label><input type="radio" name="velg" value="${i}"${i === velgIdx ? ' checked' : ''}><span><img src="${v.fotos[v.fotos.length - 1]}" alt="">${v.naam}</span></label>`).join('');
+const stalen = (id, lijst, gekozen, naam) => document.getElementById(id).innerHTML = lijst.map((l, i) => `<label class="staal" title="${l[0]}"><input type="radio" name="${naam}" value="${i}"${l === gekozen ? ' checked' : ''}><span style="background:${l[1] || 'conic-gradient(#e33,#fc3,#3c6,#36c,#e33)'}"></span><span class="sr">${l[0]}</span></label>`).join('');
+stalen('lakken', LAKKEN, lak, 'lak');
+stalen('klauwen', KLAUWEN, klauw, 'klauw');
+const inchEl = document.getElementById('inch');
+inchEl.value = inch;
+document.getElementById('inch-uit').textContent = inch + '"';
+
+/* -------- scène -------- */
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 0.9;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xe3e6ea);
+scene.fog = new THREE.Fog(0xe3e6ea, 12, 30);
+scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
+
+const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true;
+controls.maxPolarAngle = Math.PI / 2 - 0.02;
+controls.minDistance = 1.5;
+controls.maxDistance = 14;
+controls.autoRotateSpeed = 0.6;
+controls.addEventListener('start', () => { controls.autoRotate = false; document.getElementById('draai').setAttribute('aria-pressed', 'false'); });
+
+const zon = new THREE.DirectionalLight(0xffffff, 1.6);
+zon.position.set(3, 6, 2);
+zon.castShadow = true;
+zon.shadow.mapSize.set(2048, 2048);
+zon.shadow.camera.left = zon.shadow.camera.bottom = -4;
+zon.shadow.camera.right = zon.shadow.camera.top = 4;
+zon.shadow.bias = -0.0005;
+scene.add(zon);
+const vloer = new THREE.Mesh(new THREE.CircleGeometry(30, 64), new THREE.MeshStandardMaterial({ color: 0xd9dde2, roughness: 0.9 }));
+vloer.rotation.x = -Math.PI / 2; vloer.receiveShadow = true; scene.add(vloer);
+const schaduw = new THREE.Mesh(new THREE.CircleGeometry(30, 64), new THREE.ShadowMaterial({ opacity: 0.35 }));
+schaduw.rotation.x = -Math.PI / 2; schaduw.position.y = 0.001; schaduw.receiveShadow = true; scene.add(schaduw);
+
+const klauwMat = new THREE.MeshStandardMaterial({ color: klauw[1], metalness: 0.4, roughness: 0.45 });
+const zwartMat = new THREE.MeshStandardMaterial({ color: 0x111214, metalness: 0.2, roughness: 0.7 });
+const lipMat = new THREE.MeshStandardMaterial({ color: 0xc9ccd0, metalness: 1, roughness: 0.25 });
+const barrelMat = new THREE.MeshStandardMaterial({ color: 0x2a2c30, metalness: 0.8, roughness: 0.45, side: THREE.DoubleSide });
+const discMat = new THREE.MeshStandardMaterial({ color: 0x9a9ea3, metalness: 0.9, roughness: 0.4 });
+
+const loader = new GLTFLoader()
+  .setDRACOLoader(new DRACOLoader().setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/libs/draco/gltf/'))
+  .setKTX2Loader(new KTX2Loader().setTranscoderPath('https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/libs/basis/').detectSupport(renderer))
+  .setMeshoptDecoder(MeshoptDecoder);
+
+let wagen = null;        // { groep, wielen: [{center, tireR, links, voor, groep}], lakMats, L, spoor }
+let velgTextuur = null, laadNr = 0, velgNr = 0;
+
+/* -------- model laden en normaliseren -------- */
+// bbox van alleen de zichtbare meshes (verborgen grondvlakken tellen niet mee)
+function bbox(o) {
+  const b = new THREE.Box3();
+  o.updateMatrixWorld(true);
+  o.traverse(m => { if (m.isMesh && m.visible && m.geometry) { if (!m.geometry.boundingBox) m.geometry.computeBoundingBox(); const bb = m.geometry.boundingBox.clone().applyMatrix4(m.matrixWorld); b.union(bb); } });
+  if (b.isEmpty()) b.setFromObject(o);
+  return b;
+}
+
+async function laadAuto(id) {
+  const nr = ++laadNr;
+  const m = MANIFEST[id];
+  const auto = autoMetId(id);
+  const laden = document.getElementById('laden');
+  laden.classList.remove('weg');
+  laden.innerHTML = m ? '3D-model laden…' : 'Voor deze wagen is nog geen 3D-model gekozen.<code>Voeg hem toe in tools/modellen.json</code>';
+  if (!m) return;
+  if (wagen) { scene.remove(wagen.groep); wagen = null; }
+  let gltf;
+  try { gltf = await loader.loadAsync('modellen/' + m.bestand); }
+  catch (e) {
+    laden.innerHTML = 'Model nog niet opgehaald: <code>' + m.bestand + '</code><code>node tools/haal-modellen.mjs ' + id.split('-')[0] + '</code>';
+    return;
+  }
+  if (nr !== laadNr) return;
+  const root = gltf.scene;
+  root.updateMatrixWorld(true);
+  // Sketchfab-exports: "transparante" lak zonder doorzicht (x-ray-effect) en omgekeerde normalen (onzichtbare carrosserie)
+  root.traverse(o => {
+    if (!o.isMesh) return;
+    const ms = Array.isArray(o.material) ? o.material : [o.material];
+    for (const mt of ms) {
+      if (!mt) continue;
+      if (mt.transparent && mt.opacity >= 0.95 && !(mt.transmission > 0)) { mt.transparent = false; mt.depthWrite = true; mt.alphaTest = mt.map ? 0.5 : 0; }
+      if (!mt.transparent) mt.side = THREE.DoubleSide;
+      mt.needsUpdate = true;
+    }
+  });
+  verbergVlakken(root);
+
+  // 1. assen: langste horizontale maat = lengte → Z, kleinste = hoogte → Y
+  const b0 = bbox(root), s0 = new THREE.Vector3(); b0.getSize(s0);
+  const dims = [['x', s0.x], ['y', s0.y], ['z', s0.z]].sort((p, q) => q[1] - p[1]);
+  const lengteAs = dims[0][0], hoogteAs = dims[2][0];
+  // aparte groepen per draaiing, zodat elke stap om een wereld-as draait (Euler-volgorde speelt dan geen rol)
+  const wrap = new THREE.Group();
+  const tilt = new THREE.Group();     // hoogte-as naar Y
+  const yaw = new THREE.Group();      // lengte langs Z, neus naar -Z
+  const flip = new THREE.Group();     // op zijn kop → omdraaien
+  tilt.add(root); yaw.add(tilt); flip.add(yaw); wrap.add(flip);
+  if (hoogteAs === 'z') tilt.rotation.x = -Math.PI / 2;            // Z-up model
+  else if (hoogteAs === 'x') tilt.rotation.z = Math.PI / 2;
+  wrap.updateMatrixWorld(true);
+  const b1 = bbox(tilt), s1 = new THREE.Vector3(); b1.getSize(s1);
+  if (s1.x > s1.z) yaw.rotation.y = Math.PI / 2;                    // lengte langs Z
+  wrap.updateMatrixWorld(true);
+  // op zijn kop? een auto is onderaan (dorpels, wielen) breder dan bovenaan (dak)
+  if (opZijnKop(yaw)) { flip.rotation.z = Math.PI; wrap.updateMatrixWorld(true); }
+  // neus naar -Z: het uiteinde met de laagste bovenkant (motorkap) is de voorkant
+  if (m.draai == null && voorkantAanPlusZ(flip)) yaw.rotation.y += Math.PI;
+  if (m.draai) yaw.rotation.y += m.draai * Math.PI / 180;
+  if (localStorage.getItem('avdv:draai:' + id) === '1') yaw.rotation.y += Math.PI;
+  wrap.updateMatrixWorld(true);
+  // 2. schaal op de echte lengte, wielen op de grond, midden op de oorsprong
+  const b2 = bbox(flip), s2 = new THREE.Vector3(); b2.getSize(s2);
+  const schaal = (auto.L / 1000) / s2.z;
+  wrap.scale.setScalar(schaal);
+  wrap.updateMatrixWorld(true);
+  const b3 = bbox(wrap), c3 = new THREE.Vector3(); b3.getCenter(c3);
+  wrap.position.set(-c3.x, -b3.min.y, -c3.z);
+  wrap.updateMatrixWorld(true);
+
+  // 3. wielen herkennen
+  const wielen = herkenWielen(wrap, m, auto);
+  wagenWielen = wielen;
+  // 4. lak en glas
+  const lakMats = vindLak(wrap, m);
+  wrap.traverse(o => { if (o.isMesh) { o.castShadow = true; o.frustumCulled = false; } });
+  scene.add(wrap);
+  wagen = { groep: wrap, wielen, lakMats, L: auto.L / 1000, WB: auto.WB / 1000 };
+  window.__laatste = { id, geschat: !!(wielen[0] && wielen[0].geschat), wielen: wielen.length, wielPos: wielen.map(w => [+w.center.x.toFixed(2), +w.center.y.toFixed(2), +w.center.z.toFixed(2), +w.tireR.toFixed(3)]), meshes: window.__meshes ? window.__meshes.length : null, lak: lakMats.map(x => x.name), maat: [s2.x, s2.y, s2.z].map(v => +(v * schaal).toFixed(2)) };
+  localStorage.setItem('avdv:auto3d', id);
+  zetLak();
+  bouwVelgen();
+  zetHoek('zij');
+  controls.autoRotate = true;
+  document.getElementById('draai').setAttribute('aria-pressed', 'true');
+  laden.classList.add('weg');
+  document.getElementById('model-info').innerHTML = `<b>3D-model:</b> ${m.titel}${m.auteur ? ' door <a href="' + (m.auteurUrl || m.bron) + '" target="_blank" rel="noopener">' + m.auteur + '</a>' : ''}, ${m.licentie || ''}${m.opmerking ? '<br><b>Let op:</b> ' + m.opmerking : ''}<br>Wielen ${wielen[0] && wielen[0].geschat ? 'geschat uit wielbasis en spoor (wielen zitten in dit model vast aan de carrosserie)' : 'herkend: ' + wielen.length + ' van 4' + (wielen.length < 4 ? ' (zet nodenamen in modellen.json)' : '')}.`;
+  document.getElementById('bron').innerHTML = `Model: <a href="${m.bron}" target="_blank" rel="noopener">${m.titel}</a>${m.auteur ? ' · ' + m.auteur : ''} · ${m.licentie || ''}`;
+}
+
+// Grondvlakken, schaduwplaten en achtergronden uit het model halen: grote, platte meshes
+function verbergVlakken(root) {
+  const tot = new THREE.Vector3(); bbox(root).getSize(tot);
+  const max = Math.max(tot.x, tot.y, tot.z);
+  root.traverse(o => {
+    if (!o.isMesh) return;
+    const s = new THREE.Vector3(); bbox(o).getSize(s);
+    const dims = [s.x, s.y, s.z].sort((a, b) => a - b);
+    if (dims[0] < dims[2] * 0.02 && dims[2] > max * 0.6) o.visible = false;
+  });
+}
+
+function opZijnKop(obj) {
+  const b = bbox(obj), H = b.max.y - b.min.y, cx = (b.min.x + b.max.x) / 2, v = new THREE.Vector3();
+  let onder = 0, boven = 0, nOnder = 0, nBoven = 0;                 // gemiddelde |x| (t.o.v. het midden) onderaan en bovenaan
+  obj.traverse(o => {
+    if (!o.isMesh || !o.visible || !o.geometry.attributes.position) return;
+    const p = o.geometry.attributes.position, stap = Math.max(1, Math.floor(p.count / 4000));
+    for (let i = 0; i < p.count; i += stap) {
+      v.fromBufferAttribute(p, i).applyMatrix4(o.matrixWorld);
+      const h = (v.y - b.min.y) / H;
+      if (h < 0.2) { onder += Math.abs(v.x - cx); nOnder++; } else if (h > 0.8) { boven += Math.abs(v.x - cx); nBoven++; }
+    }
+  });
+  window.__kop = { onder: onder / nOnder, boven: boven / nBoven, nOnder, nBoven };
+  return nOnder > 50 && nBoven > 50 && boven / nBoven > (onder / nOnder) * 1.15;
+}
+
+function voorkantAanPlusZ(obj) {
+  const b = bbox(obj), L = b.max.z - b.min.z, H = b.max.y - b.min.y;
+  let hMin = 0, hMax = 0;                  // hoogste punt in de laatste 12 % aan elk uiteinde
+  const v = new THREE.Vector3();
+  obj.traverse(o => {
+    if (!o.isMesh || !o.geometry.attributes.position) return;
+    const p = o.geometry.attributes.position, stap = Math.max(1, Math.floor(p.count / 4000));
+    for (let i = 0; i < p.count; i += stap) {
+      v.fromBufferAttribute(p, i).applyMatrix4(o.matrixWorld);
+      if (v.z < b.min.z + L * 0.12) hMin = Math.max(hMin, v.y - b.min.y);
+      else if (v.z > b.max.z - L * 0.12) hMax = Math.max(hMax, v.y - b.min.y);
+    }
+  });
+  return hMax < hMin;                      // +Z-kant lager → dat is de neus
+}
+
+const WIELNAAM =/wheel|rim|tire|tyre|felge|reifen|\brad\b|wiel|velg|llanta|rueda|roue|jante|disk|disc|колес|диск/i;
+const BINNENNAAM = /rim|felge|velg|spoke|speich|cap|hub|nut|bolt|lug|disk|disc|brake|calip|rotor|логотип|logo|centre|center/i;
+
+function herkenWielen(wrap, m, auto) {
+  const meshes = [];
+  wrap.traverse(o => { if (o.isMesh && o.geometry) meshes.push(o); });
+  let groepen = [];
+  if (m.wielen) {
+    // handmatig: nodenamen per wiel
+    for (const [k, naam] of Object.entries(m.wielen)) {
+      const node = wrap.getObjectByName(naam);
+      if (!node) continue;
+      const bb = bbox(node), c = new THREE.Vector3(), s = new THREE.Vector3(); bb.getCenter(c); bb.getSize(s);
+      const leden = []; node.traverse(o => { if (o.isMesh) leden.push(o); });
+      groepen.push({ center: c, tireR: Math.max(s.y, s.z) / 2, leden, node, links: k.endsWith('l'), voor: k.startsWith('f') });
+    }
+  } else {
+    // automatisch: schijfvormige meshes opzij van de wagen, onderaan
+    const kandidaten = [];
+    const rBand = (A.leesBand(auto.band) || A.leesBand('225/45R17')).od / 2000;   // bandstraal volgens de wagenlijst
+    const WB = auto.WB / 1000;
+    window.__meshes = [];
+    for (const o of meshes) {
+      const bb = bbox(o), s = new THREE.Vector3(), c = new THREE.Vector3(); bb.getSize(s); bb.getCenter(c);
+      const d = Math.max(s.y, s.z), dun = s.x;
+      window.__meshes.push({ naam: o.name, mat: o.material && o.material.name, s: [s.x, s.y, s.z].map(v => +v.toFixed(3)), c: [c.x, c.y, c.z].map(v => +v.toFixed(3)), tris: o.geometry.index ? o.geometry.index.count / 3 : o.geometry.attributes.position.count / 3 });
+      if (d < 0.45 || d > 0.95) continue;                       // wieldiameter 45 tot 95 cm
+      if (Math.min(s.y, s.z) / d < 0.8) continue;               // rond in het zijvlak
+      if (Math.abs(c.y - d / 2) > 0.12) continue;               // raakt de grond
+      if (Math.abs(d / 2 - rBand) > 0.12) continue;             // straal past bij de band van deze wagen
+      if (Math.abs(c.x) > 0.45 && dun <= d * 0.75) {            // één wiel, opzij van de wagen
+        kandidaten.push({ o, c, d });
+      } else if (Math.abs(c.x) < 0.2 && dun > 1.2) {            // linker- en rechterwiel in één mesh (as)
+        for (const kant of [-1, 1]) kandidaten.push({ o, c: new THREE.Vector3(kant * (dun / 2 - 0.01), c.y, c.z), d, as: 1 });
+      }
+    }
+    // alle vier de wielen in één mesh: hoogte = wieldiameter, breedte = spoor, lengte = wielbasis + wiel
+    for (const o of meshes) {
+      const bb = bbox(o), s = new THREE.Vector3(), c = new THREE.Vector3(); bb.getSize(s); bb.getCenter(c);
+      if (Math.abs(s.y / 2 - rBand) > 0.12 || s.x < 1.2 || s.x > 2.1 || Math.abs(s.z - s.y - WB) > 0.3 || Math.abs(c.x) > 0.2 || Math.abs(c.y - s.y / 2) > 0.12) continue;
+      for (const kx of [-1, 1]) for (const kz of [-1, 1]) kandidaten.push({ o, c: new THREE.Vector3(kx * (s.x / 2 - 0.01), c.y, c.z + kz * (s.z - s.y) / 2), d: s.y, as: 2 });
+    }
+    // clusteren op kant en lengtepositie
+    for (const k of kandidaten) {
+      let g = groepen.find(g => Math.sign(g.center.x) === Math.sign(k.c.x) && Math.abs(g.center.z - k.c.z) < 0.4);
+      if (!g) { g = { center: k.c.clone(), tireR: k.d / 2, leden: [], links: k.c.x < 0, as: k.as || 0 }; groepen.push(g); }
+      g.leden.push(k.o);
+      if (k.d / 2 > g.tireR) { g.tireR = k.d / 2; g.center.copy(k.c); g.as = k.as || 0; }
+    }
+    groepen = kiesRechthoek(groepen, WB);
+    if (groepen.length !== 4) groepen = wielenUitVertices(wrap, auto, rBand, WB);
+    const zs = groepen.map(g => g.center.z), zmid = (Math.min(...zs) + Math.max(...zs)) / 2;
+    groepen.forEach(g => { g.voor = g.center.z < zmid; });
+  }
+  // originele velg verbergen: alles in de wielgroep dat kleiner is dan de band of "binnenkant" heet
+  const verberg = m.verbergen || null;
+  for (const g of groepen) {
+    for (const o of g.leden) {
+      const bb = bbox(o), s = new THREE.Vector3(); bb.getSize(s);
+      const d = Math.max(s.y, s.z);
+      const naam = (o.name || '') + ' ' + (o.parent && o.parent !== g.node && o.parent.name || '');
+      const weg = verberg ? verberg.some(v => (o.name || '').includes(v)) : (d < g.tireR * 2 * 0.93 || BINNENNAAM.test(naam));
+      if (weg) o.visible = false;
+    }
+    // band blijft; als band en velg één mesh zijn, dekt onze schijf de velg af
+    g.groep = new THREE.Group();
+    g.groep.position.copy(g.center);
+    scene.add(g.groep);
+  }
+  return groepen;
+}
+
+// Uit de gevonden wielgroepen de vier kiezen die samen een rechthoek vormen (twee assen, links en rechts even ver)
+function kiesRechthoek(groepen, WB) {
+  const L = groepen.filter(g => g.center.x < 0), R = groepen.filter(g => g.center.x > 0);
+  let best = null, bestScore = Infinity;
+  for (const l1 of L) for (const l2 of L) for (const r1 of R) for (const r2 of R) {
+    if (l1 === l2 || r1 === r2) continue;
+    if (l1.center.z > l2.center.z) continue;                                   // l1 vóór l2
+    const wb = l2.center.z - l1.center.z;
+    if (Math.abs(wb - WB) > 0.35) continue;                                    // wielbasis volgens de wagenlijst
+    const score = Math.abs(r1.center.z - l1.center.z) + Math.abs(r2.center.z - l2.center.z) +
+      Math.abs(Math.abs(l1.center.x) - Math.abs(r1.center.x)) + Math.abs(Math.abs(l2.center.x) - Math.abs(r2.center.x)) +
+      Math.abs(l1.tireR - r1.tireR) * 4 + Math.abs(l2.tireR - r2.tireR) * 4 + Math.abs(l1.tireR - l2.tireR) * 2 +
+      Math.abs(wb - WB) + (l1.as + l2.as + r1.as + r2.as) * 0.05;             // echte wielmeshes gaan voor
+    if (score < 0.6 && score < bestScore) { bestScore = score; best = [l1, r1, l2, r2]; }
+  }
+  return best || [];
+}
+
+// Terugval als de wielen geen eigen meshes zijn: contactpunten van de banden op de grond → assen en spoor;
+// klopt dat niet met de wielbasis, dan de maten uit de wagenlijst rond het midden van de wagen
+function wielenUitVertices(wrap, auto, r, WB) {
+  const b = bbox(wrap), pts = [], v = new THREE.Vector3();
+  wrap.traverse(o => {
+    if (!o.isMesh || !o.visible || !o.geometry.attributes.position) return;
+    const p = o.geometry.attributes.position, stap = Math.max(1, Math.floor(p.count / 30000));
+    for (let i = 0; i < p.count; i += stap) { v.fromBufferAttribute(p, i).applyMatrix4(o.matrixWorld); if (v.y < b.min.y + 0.04 && Math.abs(v.x) > 0.45) pts.push([v.x, v.z]); }
+  });
+  let z1 = b.min.z + 0.8, z2 = b.max.z - 0.8, x = (b.max.x - b.min.x) / 2 - 0.09;
+  if (pts.length >= 20) {
+    for (let it = 0; it < 15; it++) {                                          // 1D k-means op de lengte-as
+      const P = pts.filter(p => Math.abs(p[1] - z1) <= Math.abs(p[1] - z2)), Q = pts.filter(p => Math.abs(p[1] - z1) > Math.abs(p[1] - z2));
+      if (P.length) z1 = P.reduce((s, p) => s + p[1], 0) / P.length;
+      if (Q.length) z2 = Q.reduce((s, p) => s + p[1], 0) / Q.length;
+    }
+    const xs = pts.map(p => Math.abs(p[0])).sort((a, c) => c - a);
+    const xv = xs[Math.floor(xs.length * 0.02)] - 0.02;
+    const half = (b.max.x - b.min.x) / 2;
+    x = (xv > half - 0.3 && xv < half - 0.04) ? xv : half - 0.16;               // spiegels steken ± 10 cm uit
+  }
+  if (Math.abs(z2 - z1 - WB) > 0.3) { const zc = (b.min.z + b.max.z) / 2 + 0.05; z1 = zc - WB / 2; z2 = zc + WB / 2; }
+  const groepen = [];
+  for (const z of [z1, z2]) for (const kant of [-1, 1]) groepen.push({ center: new THREE.Vector3(kant * x, r, z), tireR: r, leden: [], links: kant < 0, as: 0, geschat: true });
+  return groepen;
+}
+
+function vindLak(wrap, m) {
+  const mats = new Map();
+  wrap.traverse(o => {
+    if (!o.isMesh || !o.visible) return;
+    const lijst = Array.isArray(o.material) ? o.material : [o.material];
+    for (const mat of lijst) {
+      if (!mat) continue;
+      const naam = (mat.name || '') + ' ' + (o.name || '');
+      const bb = bbox(o), s = new THREE.Vector3(); bb.getSize(s);
+      const opp = s.x * s.y + s.y * s.z + s.x * s.z;
+      const e = mats.get(mat) || { mat, opp: 0, naam };
+      e.opp += opp;
+      mats.set(mat, e);
+    }
+  });
+  const alles = [...mats.values()].filter(e => !/glass|glas|window|ruit|windshield|tire|tyre|reifen|rubber|chrome|cromado|espelho|mirror|freio|brake|rotor|disco|rim|wheel|light|lamp|interior|innen|seat|leather|plastic|black|trim|grill|steel|metal/i.test(e.naam) && !(e.mat.transparent && e.mat.opacity < 0.9));
+  const naamHit = alles.filter(e => /body|paint|carpaint|lack|\blak\b|carro\b|exterior|karosserie|shell|kuzov|primary|color|colour|farbe|chassis|vehicle/i.test(e.naam));
+  let gekozen = (m.carrosserie ? [...mats.values()].filter(e => e.naam.includes(m.carrosserie)) : null) || (naamHit.length ? naamHit : alles.sort((a, b) => b.opp - a.opp).slice(0, 1));
+  // model met één materiaal voor alles (witte "klei"): elke carrosserie-mesh krijgt een eigen lakmateriaal, wielen niet
+  if (!gekozen.length || mats.size <= 2) {
+    const wielMeshes = new Set(); (wagenWielen || []).forEach(g => (g.leden || []).forEach(o => wielMeshes.add(o)));
+    const rubber = new THREE.MeshStandardMaterial({ color: 0x141517, roughness: 0.85, side: THREE.DoubleSide });
+    wielMeshes.forEach(o => { if (o.visible) o.material = rubber; });     // banden in klei-modellen donker
+    const lak = new THREE.MeshPhysicalMaterial({ color: 0xffffff, metalness: 0.6, roughness: 0.35, clearcoat: 1, clearcoatRoughness: 0.05, side: THREE.DoubleSide });
+    wrap.traverse(o => {
+      if (!o.isMesh || !o.visible || wielMeshes.has(o)) return;
+      const s = new THREE.Vector3(); bbox(o).getSize(s);
+      if (Math.max(s.x, s.y, s.z) < 0.25) return;                     // kleine onderdelen (logo's, sensoren) laten staan
+      const mt = Array.isArray(o.material) ? o.material[0] : o.material;
+      if (mt && mt.transparent && mt.opacity < 0.9) return;           // glas
+      o.material = lak;
+    });
+    gekozen = [{ mat: lak }];
+  }
+  return gekozen.map(e => { e.mat.userData.origKleur = e.mat.color.clone(); return e.mat; });
+}
+let wagenWielen = null;
+
+function zetLak() {
+  if (!wagen) return;
+  for (const mat of wagen.lakMats) {
+    if (lak[1]) { mat.color.set(lak[1]); if (mat.map) { mat.userData.origMap = mat.userData.origMap || mat.map; mat.map = null; } mat.metalness = 0.6; mat.roughness = 0.35; if ('clearcoat' in mat) { mat.clearcoat = 1; mat.clearcoatRoughness = 0.05; } }
+    else { mat.color.copy(mat.userData.origKleur); if (mat.userData.origMap) mat.map = mat.userData.origMap; }
+    mat.needsUpdate = true;
+  }
+}
+
+/* -------- de velg als 3D-object uit de productfoto -------- */
+async function laadVelgTextuur() {
+  const nr = ++velgNr;
+  const v = VELGEN[velgIdx];
+  document.getElementById('titel').textContent = v.naam + ' · ' + inch + '"';
+  const res = await A.maakVelg(v.fotos);
+  if (nr !== velgNr) return;
+  const tex = await new THREE.TextureLoader().loadAsync(res.href);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  velgTextuur = tex;
+  bouwVelgen();
+}
+
+function bouwVelgen() {
+  if (!wagen || !velgTextuur) return;
+  const auto = autoMetId(autoId);
+  const orig = A.leesBand(auto.band) || A.leesBand('225/45R17');
+  wagen.wielen.forEach(w => {
+    w.groep.clear();
+    // velgstraal in meter uit de gekozen maat, begrensd door de band van het model
+    const r = Math.min(inch * 25.4 / 2000 + 0.012, w.tireR * 0.9);
+    const diepte = 0.14, uit = 0.02;                              // hoe ver de velg voor het bandvlak staat
+    const g = new THREE.Group();
+    if (w.geschat || !w.leden || !w.leden.length) {                                        // model zonder losse banden: eigen band
+      const band = new THREE.Mesh(new THREE.TorusGeometry(w.tireR - 0.055, 0.075, 16, 64), new THREE.MeshStandardMaterial({ color: 0x141517, roughness: 0.85 }));
+      band.scale.z = 1.5; band.position.z = uit - 0.11; g.add(band);
+    }
+    const wand = new THREE.Mesh(new THREE.CircleGeometry(w.tireR * 0.99, 64), zwartMat);   // dekt de originele velg af
+    wand.position.z = uit - 0.012; g.add(wand);
+    const diep = new THREE.Mesh(new THREE.CircleGeometry(r * 0.96, 64), new THREE.MeshStandardMaterial({ color: 0x0a0b0c, roughness: 0.9 }));
+    diep.position.z = uit - 0.006; g.add(diep);
+    const schijf = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.62, r * 0.62, 0.01, 48), discMat);
+    schijf.rotation.x = Math.PI / 2; schijf.position.z = uit - 0.003; g.add(schijf);
+    const klauwM = new THREE.Mesh(new THREE.BoxGeometry(r * 0.16, r * 0.42, 0.04), klauwMat);
+    klauwM.position.set(w.voor ? r * 0.5 : -r * 0.5, r * 0.32, uit - 0.02); klauwM.rotation.z = w.voor ? 0.6 : -0.6; g.add(klauwM);
+    const barrel = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.985, r * 0.95, diepte, 64, 1, true), barrelMat);
+    barrel.rotation.x = Math.PI / 2; barrel.position.z = uit - diepte / 2 + 0.02; g.add(barrel);
+    const vlakGeo = new THREE.CircleGeometry(r, 96);
+    const pos = vlakGeo.attributes.position;
+    for (let i = 0; i < pos.count; i++) { const x = pos.getX(i), y = pos.getY(i), d = Math.hypot(x, y) / r; pos.setZ(i, (1 - d * d) * r * 0.06); }
+    vlakGeo.computeVertexNormals();
+    const vlak = new THREE.Mesh(vlakGeo, new THREE.MeshStandardMaterial({ map: velgTextuur, transparent: true, alphaTest: 0.35, metalness: 0.55, roughness: 0.32, envMapIntensity: 1.2 }));
+    vlak.position.z = uit; g.add(vlak);
+    const lip = new THREE.Mesh(new THREE.TorusGeometry(r * 0.985, r * 0.022, 12, 96), lipMat);
+    lip.position.z = uit; g.add(lip);
+    const naaf = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.09, r * 0.09, 0.02, 32), lipMat);
+    naaf.rotation.x = Math.PI / 2; naaf.position.z = uit + 0.004; g.add(naaf);
+    if (toonWielen) { const ring = new THREE.Mesh(new THREE.TorusGeometry(w.tireR, 0.012, 8, 64), new THREE.MeshBasicMaterial({ color: 0x419afe })); ring.position.z = uit + 0.03; g.add(ring); }
+    g.rotation.y = w.links ? -Math.PI / 2 : Math.PI / 2;
+    g.traverse(o => { if (o.isMesh) o.castShadow = true; });
+    w.groep.add(g);
+  });
+  const v = A.bandVoorstel(orig, inch, null);
+  document.getElementById('info').innerHTML = `<b>${VELGEN[velgIdx].naam}</b> in ${inch}" op ${auto.merk} ${auto.model.replace(/\s*\(.*/, '')}. Band bijvoorbeeld <b>${v.txt}</b> (origineel ${orig.txt}). De velg is opgebouwd uit de productfoto van de winkel; de gaten tussen de spaken zijn open.`;
+}
+
+/* -------- camera -------- */
+function zetHoek(h) {
+  const L = wagen ? wagen.L : 4.5, f = L / 4.5;
+  const p = { zij: [7.4 * f, 0.9, 0.1], voor: [5.2 * f, 1.5, -4.9 * f], achter: [5.2 * f, 1.5, 5.2 * f], wiel: [3.0, 0.45, 0] }[h] || [7.4 * f, 0.9, 0.1];
+  if (h === 'wiel' && wagen && wagen.wielen.length) {
+    const w = wagen.wielen.find(w => !w.links && w.voor) || wagen.wielen[0];
+    controls.target.copy(w.center); p[0] = w.center.x + 2.4; p[1] = w.center.y + 0.1; p[2] = w.center.z - 0.5;
+  } else controls.target.set(0, 0.5, 0);
+  camera.position.set(...p);
+  controls.autoRotate = false;
+  document.getElementById('draai').setAttribute('aria-pressed', 'false');
+  document.querySelectorAll('.hoeken [data-hoek]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.hoek === h)));
+  controls.update();
+}
+
+/* -------- events -------- */
+merkEl.addEventListener('change', () => { vulModellen(); autoId = modelEl.value; laadAuto(autoId); });
+modelEl.addEventListener('change', () => { autoId = modelEl.value; laadAuto(autoId); });
+document.addEventListener('change', (e) => {
+  const t = e.target;
+  if (t.name === 'velg') { velgIdx = +t.value; inch = VELGEN[velgIdx].inch; inchEl.value = inch; document.getElementById('inch-uit').textContent = inch + '"'; laadVelgTextuur(); }
+  if (t.name === 'lak') { lak = LAKKEN[+t.value]; zetLak(); }
+  if (t.name === 'klauw') { klauw = KLAUWEN[+t.value]; klauwMat.color.set(klauw[1]); }
+});
+inchEl.addEventListener('input', () => { inch = +inchEl.value; document.getElementById('inch-uit').textContent = inch + '"'; document.getElementById('titel').textContent = VELGEN[velgIdx].naam + ' · ' + inch + '"'; bouwVelgen(); });
+document.querySelectorAll('.hoeken [data-hoek]').forEach(b => b.addEventListener('click', () => zetHoek(b.dataset.hoek)));
+document.getElementById('draai').addEventListener('click', (e) => { controls.autoRotate = !controls.autoRotate; e.currentTarget.setAttribute('aria-pressed', String(controls.autoRotate)); });
+document.getElementById('omdraaien').addEventListener('click', () => { localStorage.setItem('avdv:draai:' + autoId, localStorage.getItem('avdv:draai:' + autoId) === '1' ? '0' : '1'); laadAuto(autoId); });
+document.getElementById('wielen-toon').addEventListener('click', (e) => { toonWielen = !toonWielen; e.currentTarget.setAttribute('aria-pressed', String(toonWielen)); bouwVelgen(); });
+document.getElementById('bewaar').addEventListener('click', () => {
+  renderer.render(scene, camera);
+  const a = document.createElement('a');
+  a.href = renderer.domElement.toDataURL('image/png');
+  a.download = 'avd-3d-' + VELGEN[velgIdx].naam.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + autoId + '.png';
+  a.click();
+});
+
+function maat() {
+  const r = canvas.parentElement.getBoundingClientRect();
+  renderer.setSize(r.width, r.height, false);
+  camera.aspect = r.width / r.height;
+  camera.updateProjectionMatrix();
+}
+new ResizeObserver(maat).observe(canvas.parentElement);
+maat();
+
+window.__laadAuto = laadAuto;   // voor de controle van alle modellen in test/
+window.__wagen = () => wagen;
+window.__render = () => { controls.update(); renderer.render(scene, camera); };
+window.__materialen = () => { const r = []; if (!wagen) return r; wagen.groep.traverse(o => { if (!o.isMesh) return; const ms = Array.isArray(o.material) ? o.material : [o.material]; for (const m of ms) r.push({ mesh: o.name, zichtbaar: o.visible, mat: m.name, transparent: m.transparent, opacity: m.opacity, alphaMode: m.alphaTest, map: !!m.map, transmission: m.transmission, side: m.side, kleur: '#' + m.color.getHexString() }); }); return r; };
+const a0 = autoMetId(autoId);
+merkEl.value = a0.merk === 'Demo' ? '__demo' : a0.merk;
+vulModellen();
+modelEl.value = autoId;
+laadVelgTextuur();
+laadAuto(autoId);
+renderer.setAnimationLoop(() => { controls.update(); renderer.render(scene, camera); });
+</script>
+</body>
+</html>

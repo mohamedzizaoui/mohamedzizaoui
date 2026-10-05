@@ -89,3 +89,20 @@ Wat er wel per model ingesteld moet worden (nu hard gecodeerd voor de Ferrari in
 * Foto's moeten van hetzelfde domein komen of `Access-Control-Allow-Origin` meegeven, anders is het canvas "tainted" en valt het script terug op de gewone foto in een cirkel.
 * Toegankelijk: `<dialog>`, focus zichtbaar, wielen in de fotomodus ook met de pijltjestoetsen te verschuiven, kleurstalen als radioknoppen met naam.
 * Getest in Chromium; `dialog.showModal`, `aspect-ratio` en `dvh` vragen een browser van 2022 of later.
+
+## Velgensimulator (5 oktober 2026)
+
+Nieuwe 3D-aanpak in `demo/simulator/`: de velgen zijn echte 3D-modellen (spaken, lip, naaf met boutgaten
+volgens de steek, naafdop, band met profiel, remschijf en remklauw), opgebouwd uit een ontwerp per velg in
+`demo/3d/ontwerpen.js` door `demo/3d/velg3d.js`. De productfoto wordt niet meer op een schijf geplakt.
+
+* Studio: de velg op een draaiplateau met studio-belichting (`demo/3d/studio.js`), vooraanzicht, schuin, detail.
+* Op je wagen: dezelfde 31 wagens als voorheen; het originele wiel (velg én band) wordt verborgen en vervangen door
+  het nieuwe wiel in de gekozen maat, met band volgens `bandVoorstel` (zelfde omtrek als origineel). Wagenlader
+  zonder DOM in `demo/3d/auto3d.js`.
+* Instellingen: wagen, velg (met "past"/steek-badge), maat per velg, afwerking per velg, remklauw, lak van de wagen.
+  Samenvatting met steek/ET/naafgat, bandvoorstel, waarschuwingen (steek, naafgat, +3 inch, omtrek) en prijs voor
+  een set van 4; knoppen voor winkelwagen, afbeelding bewaren en link kopiëren (alle keuzes staan in de URL).
+* Controlepagina: `test/velgen.html` (alle negen velgen naast elkaar, `?velg=i&hoek=…&afw=…`).
+
+Open: http://localhost:8190/demo/simulator/ (na `node serve.mjs`).

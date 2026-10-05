@@ -301,14 +301,14 @@ export function maakRem(R, opties) {
   const rS = Math.min(R * 0.66, 0.175);
   const schijf = new THREE.Mesh(new THREE.CylinderGeometry(rS, rS, 0.026, 96), fys({ color: 0x5a5d62, metalness: 0.9, roughness: 0.55 }));
   if (opties.achterplaat !== false) {   // donkere wielkast achter het wiel
-    const plaat = new THREE.Mesh(new THREE.CircleGeometry(R + 0.12, 64), new THREE.MeshStandardMaterial({ color: 0x0d0e10, roughness: 1 }));
+    const plaat = new THREE.Mesh(new THREE.CircleGeometry(R + (opties.plaatMarge != null ? opties.plaatMarge : 0.12), 64), new THREE.MeshStandardMaterial({ color: 0x0d0e10, roughness: 1 }));
     plaat.position.z = -0.16; g.add(plaat);
   }
   schijf.rotation.x = Math.PI / 2; schijf.position.z = -0.075; g.add(schijf);
   const hoed = new THREE.Mesh(new THREE.CylinderGeometry(rS * 0.5, rS * 0.5, 0.034, 48), fys({ color: 0x3b3d42, metalness: 0.7, roughness: 0.6 }));
   hoed.rotation.x = Math.PI / 2; hoed.position.z = -0.072; g.add(hoed);
   // klauw: sector over de schijfrand
-  const a0 = opties.voor ? -0.35 : Math.PI + 0.35, span = 0.62;
+  const a0 = opties.klauwHoek != null ? opties.klauwHoek : (opties.voor ? -0.35 : Math.PI + 0.35), span = 0.62;
   const kv = new THREE.Shape();
   kv.absarc(0, 0, rS + 0.014, a0 - span / 2, a0 + span / 2, false);
   kv.absarc(0, 0, rS - 0.05, a0 + span / 2, a0 - span / 2, true);
@@ -329,7 +329,7 @@ export function maakWiel(ontwerp, opties) {
   const w = new THREE.Group(); w.name = 'wiel';
   const velg = maakVelg(ontwerp, opties);
   const band = opties.band ? maakBand(Object.assign({ inch: opties.inch }, opties.band), opties.breedteJ) : null;
-  const rem = opties.rem === false ? null : maakRem(velg.userData.R, { voor: opties.voor !== false, klauwKleur: opties.klauwKleur });
+  const rem = opties.rem === false ? null : maakRem(velg.userData.R, { voor: opties.voor !== false, klauwKleur: opties.klauwKleur, klauwHoek: opties.klauwHoek, achterplaat: opties.achterplaat, plaatMarge: opties.plaatMarge });
   w.add(velg); if (band) w.add(band); if (rem) w.add(rem);
   // het hele wiel zo verschuiven dat het midden van de velgbreedte op z=0 ligt
   const W = velg.userData.W;

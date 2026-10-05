@@ -17,6 +17,7 @@ De velg zelf wordt in alle drie de gevallen automatisch uit de bestaande product
 | `demo/3d/index.html` | 3D-weergave. Laadt three.js van jsDelivr en `ferrari-458.glb`. |
 | `demo/velgen/` | Productfoto's van de winkel voor de demo. |
 | `serve.mjs` | `node serve.mjs` → http://localhost:8190/demo/ |
+| `start-demo.bat` / `start-demo.sh` | Dubbelklik (Windows) of `./start-demo.sh` (Mac/Linux): start de server en opent de simulator in de browser. |
 | `test/autos.html` | Alle 2D-carrosserieën naast elkaar (`?ids=…&inch=…`). |
 
 ## Inbouwen op avdvelgen.be

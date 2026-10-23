@@ -1,0 +1,878 @@
+<title>Ziezo LinkedIn</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: vaste zijbalk met de werkstroom (wie is aan zet), rechts één werkvlak; op gsm wordt de zijbalk een tabrij bovenaan. */
+:root {
+  --bg: #f4f5f2;
+  --surface: #ffffff;
+  --sunk: #eceee9;
+  --ink: #16191d;
+  --muted: #5b636d;
+  --line: #dcdfd8;
+  --accent: #2a45c4;
+  --accent-ink: #ffffff;
+  --accent-soft: #e5e9fb;
+  --warn: #9a5800;
+  --warn-soft: #fbefd9;
+  --ok: #1b7246;
+  --ok-soft: #e1f2e8;
+  --bad: #b3261e;
+  --font-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Instrument Sans", "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111316; --surface: #1a1d21; --sunk: #15171a; --ink: #eceeea; --muted: #9aa2ac; --line: #2c3036;
+    --accent: #93a5ff; --accent-ink: #10142a; --accent-soft: #222a4b;
+    --warn: #f0b45c; --warn-soft: #382a12; --ok: #73d39b; --ok-soft: #15301f; --bad: #ff8a80;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111316; --surface: #1a1d21; --sunk: #15171a; --ink: #eceeea; --muted: #9aa2ac; --line: #2c3036;
+  --accent: #93a5ff; --accent-ink: #10142a; --accent-soft: #222a4b;
+  --warn: #f0b45c; --warn-soft: #382a12; --ok: #73d39b; --ok-soft: #15301f; --bad: #ff8a80;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font-body); }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 700; line-height: 1.15; margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
+h1 { font-size: 1.9rem; }
+h2 { font-size: 1.2rem; }
+h3 { font-size: 1rem; font-weight: 600; }
+p { margin: 0; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+
+.app { display: grid; grid-template-columns: 232px minmax(0, 1fr); min-height: 100vh; }
+.nav { border-right: 1px solid var(--line); padding: 24px 14px; display: flex; flex-direction: column; gap: 22px; position: sticky; top: 0; height: 100vh; overflow-y: auto; background: var(--bg); }
+.brand { display: flex; gap: 10px; align-items: center; padding: 0 8px; }
+.mark { width: 34px; height: 34px; border-radius: 8px; background: var(--ink); color: var(--bg); display: grid; place-items: center; font: 700 15px var(--font-display); flex: none; }
+.brand b { font-family: var(--font-display); font-size: 1.02rem; display: block; line-height: 1.1; }
+.brand small { color: var(--muted); font-size: 0.78rem; }
+.tabs { display: flex; flex-direction: column; gap: 2px; }
+.tab { display: flex; justify-content: space-between; align-items: center; gap: 8px; border: 0; background: none; text-align: left; padding: 8px 10px; border-radius: 8px; cursor: pointer; color: var(--muted); font-weight: 500; }
+.tab:hover { background: var(--sunk); color: var(--ink); }
+.tab[aria-current="page"] { background: var(--surface); color: var(--ink); box-shadow: 0 0 0 1px var(--line); }
+.tab .n { font: 500 0.75rem var(--font-mono); background: var(--accent-soft); color: var(--accent); border-radius: 99px; padding: 1px 7px; }
+.nav-foot { margin-top: auto; font-size: 0.8rem; color: var(--muted); padding: 0 8px; display: grid; gap: 6px; }
+.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--muted); vertical-align: 1px; margin-right: 6px; }
+.dot.on { background: var(--ok); }
+.dot.off { background: var(--bad); }
+
+main { padding-block: 32px 80px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); min-width: 0; }
+.wrap { max-width: 1060px; margin: 0 auto; display: grid; gap: 28px; padding: 0 12px; }
+.head { display: flex; justify-content: space-between; align-items: end; gap: 16px; flex-wrap: wrap; }
+.head p { color: var(--muted); max-width: 62ch; margin-top: 6px; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 20px; display: grid; gap: 14px; min-width: 0; }
+.panel-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.banner { border: 1px solid var(--warn); background: var(--warn-soft); color: var(--ink); border-radius: var(--r); padding: 12px 16px; font-size: 0.92rem; }
+
+.btn { border: 1px solid var(--line); background: var(--surface); padding: 7px 14px; border-radius: 8px; cursor: pointer; font-weight: 500; white-space: nowrap; }
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.ghost { border-color: transparent; background: none; color: var(--muted); }
+.btn.ghost:hover { color: var(--ink); background: var(--sunk); }
+.btn.danger { color: var(--bad); }
+.btn.claude::before { content: "✦ "; color: var(--accent); }
+.btn.primary.claude::before { color: inherit; }
+.btn:disabled { opacity: 0.55; cursor: progress; }
+.btns { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+/* Status: vorm + kleur, zodat je in één oogopslag ziet wie aan zet is */
+.pill { display: inline-flex; align-items: center; gap: 6px; font-size: 0.75rem; font-weight: 600; padding: 2px 9px; border-radius: 99px; border: 1px solid transparent; white-space: nowrap; }
+.pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.s-idee { background: var(--sunk); color: var(--muted); border-color: var(--line); }
+.s-concept { background: var(--accent-soft); color: var(--accent); }
+.s-feedback { background: var(--warn-soft); color: var(--warn); }
+.s-goedgekeurd { background: var(--ok-soft); color: var(--ok); }
+.s-gepost { background: transparent; color: var(--ink); border-color: var(--line); }
+.s-gepost::before { background: none; border: 1.5px solid currentColor; width: 5px; height: 5px; }
+
+.turns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.turn h2 { display: flex; align-items: center; gap: 10px; }
+.turn .who { font: 600 0.72rem var(--font-body); letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 8px; border-radius: 6px; }
+.turn.jij .who { background: var(--ink); color: var(--bg); }
+.turn.claude .who { background: var(--accent-soft); color: var(--accent); }
+.todo { list-style: none; margin: 0; padding: 0; display: grid; }
+.todo li { border-top: 1px solid var(--line); }
+.todo li:first-child { border-top: 0; }
+.todo button { width: 100%; text-align: left; border: 0; background: none; padding: 10px 2px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; cursor: pointer; border-radius: 6px; }
+.todo button:hover { background: var(--sunk); }
+.todo .t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.todo .when { font: 0.78rem var(--font-mono); color: var(--muted); }
+.todo .late { color: var(--bad); }
+.empty { color: var(--muted); font-size: 0.92rem; padding: 6px 0; }
+.hint { font-size: 0.85rem; color: var(--muted); background: var(--sunk); border-radius: 8px; padding: 10px 12px; }
+.hint code { font-family: var(--font-mono); font-size: 0.82rem; color: var(--ink); }
+
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); }
+.kpi { padding: 16px 18px; border-left: 1px solid var(--line); display: grid; gap: 4px; min-width: 0; }
+.kpi:first-child { border-left: 0; }
+.kpi b { font: 600 1.6rem var(--font-display); font-variant-numeric: tabular-nums; }
+.kpi small { color: var(--muted); font-size: 0.8rem; }
+
+.cal-wrap { overflow-x: auto; }
+.cal { display: grid; grid-template-columns: repeat(7, minmax(92px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; min-width: 660px; }
+.cal .dow { background: var(--sunk); padding: 6px 8px; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+.cal .day { background: var(--surface); min-height: 86px; padding: 6px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.cal .day.past { background: var(--sunk); }
+.cal .day.today { box-shadow: inset 0 0 0 2px var(--accent); }
+.cal .num { font: 0.75rem var(--font-mono); color: var(--muted); display: flex; justify-content: space-between; }
+.cal .best { color: var(--ok); font-family: var(--font-body); font-size: 0.68rem; }
+.chip { border: 0; text-align: left; font-size: 0.76rem; padding: 3px 6px; border-radius: 5px; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; }
+.chip.s-gepost { border: 1px solid var(--line); }
+
+.filters { display: flex; gap: 6px; flex-wrap: wrap; }
+.fbtn { border: 1px solid var(--line); background: var(--surface); padding: 5px 12px; border-radius: 99px; cursor: pointer; font-size: 0.85rem; color: var(--muted); }
+.fbtn[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.posts { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 14px; }
+.post { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; display: flex; flex-direction: column; gap: 10px; cursor: pointer; min-width: 0; }
+.post:hover { border-color: var(--muted); }
+.post-top { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 0.8rem; color: var(--muted); }
+.post-top .date { margin-left: auto; font-family: var(--font-mono); }
+.excerpt { color: var(--muted); font-size: 0.9rem; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; white-space: pre-line; }
+.post .aan { font-size: 0.8rem; margin-top: auto; padding-top: 8px; border-top: 1px dashed var(--line); color: var(--muted); }
+.post .aan b { color: var(--ink); font-weight: 600; }
+
+.gen { display: grid; grid-template-columns: minmax(0, 1fr) 190px auto; gap: 10px; align-items: end; }
+label.f { display: grid; gap: 5px; font-size: 0.85rem; font-weight: 500; min-width: 0; }
+label.f .sub { font-weight: 400; color: var(--muted); font-size: 0.8rem; }
+input[type=text], input[type=url], input[type=number], input[type=date], input[type=time], input[type=month], select, textarea {
+  width: 100%; border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 8px 10px; min-width: 0;
+}
+textarea { resize: vertical; line-height: 1.55; }
+input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: transparent; }
+.count { font: 0.75rem var(--font-mono); color: var(--muted); justify-self: end; }
+.count.over { color: var(--bad); }
+.fields { display: grid; gap: 16px; }
+.field-copy { display: grid; gap: 6px; }
+.field-copy .top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.savebar { position: sticky; bottom: 12px; display: flex; justify-content: space-between; align-items: center; gap: 12px; background: var(--ink); color: var(--bg); padding: 10px 14px 10px 18px; border-radius: 10px; flex-wrap: wrap; }
+.savebar .btn { background: var(--bg); color: var(--ink); border-color: var(--bg); }
+
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; counter-reset: s; }
+.steps li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: start; padding: 8px 4px; border-radius: 6px; }
+.steps input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--accent); }
+.steps .done span { text-decoration: line-through; color: var(--muted); }
+
+table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+td.num, th.num { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.tbl { overflow-x: auto; }
+.statform { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)) auto; gap: 10px; align-items: end; }
+.chart svg { width: 100%; height: auto; display: block; }
+.chart text { fill: var(--muted); font: 11px var(--font-mono); }
+
+.op { display: grid; gap: 8px; padding: 14px 0; border-top: 1px solid var(--line); }
+.op:first-child { border-top: 0; }
+.op .answer { background: var(--accent-soft); border-radius: 8px; padding: 10px 12px; font-size: 0.92rem; white-space: pre-line; }
+.op .answer .label { color: var(--accent); display: block; margin-bottom: 2px; }
+
+/* Bewerkpaneel */
+.scrim { position: fixed; inset: 0; background: rgb(10 12 16 / 0.42); z-index: 20; }
+.drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(620px, 100%); background: var(--surface); z-index: 21; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; border-left: 1px solid var(--line); padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); padding-right: env(safe-area-inset-right, 0px); }
+.drawer header, .drawer footer { padding: 14px 20px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.drawer header { border-bottom: 1px solid var(--line); }
+.drawer header .sp { margin-left: auto; }
+.drawer footer { border-top: 1px solid var(--line); background: var(--sunk); }
+.d-body { overflow-y: auto; padding: 18px 20px; display: grid; gap: 16px; align-content: start; }
+.row3 { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 0.8fr); gap: 10px; }
+.row4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.preview { border: 1px solid var(--line); border-radius: 8px; padding: 14px; background: var(--bg); display: grid; gap: 10px; font-size: 0.92rem; }
+.preview .who { display: flex; gap: 10px; align-items: center; }
+.preview .who .mark { width: 40px; height: 40px; }
+.preview .who small { display: block; color: var(--muted); font-size: 0.78rem; }
+.preview .txt { white-space: pre-wrap; overflow-wrap: anywhere; }
+.preview .fold { color: var(--muted); }
+.preview .more { color: var(--muted); font-weight: 600; }
+.aan-line { font-size: 0.85rem; color: var(--muted); }
+.working { font-size: 0.85rem; color: var(--accent); }
+
+.toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 9px 16px; border-radius: 8px; font-size: 0.9rem; z-index: 30; max-width: calc(100% - 32px); }
+
+@media (max-width: 860px) {
+  .app { grid-template-columns: minmax(0, 1fr); }
+  .nav { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); padding: 14px max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px)); gap: 12px; }
+  .tabs { flex-direction: row; overflow-x: auto; gap: 4px; }
+  .tab { flex: none; }
+  .nav-foot { display: none; }
+  .wrap { padding: 0; }
+  .grid2, .turns { grid-template-columns: minmax(0, 1fr); }
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kpi:nth-child(3) { border-left: 0; }
+  .kpi:nth-child(n+3) { border-top: 1px solid var(--line); }
+  .gen { grid-template-columns: minmax(0, 1fr); }
+  .statform { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .row3, .row4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  h1 { font-size: 1.55rem; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .drawer:not([hidden]) { animation: slide 0.18s ease-out; }
+  @keyframes slide { from { transform: translateX(24px); opacity: 0.6; } }
+}
+</style>
+
+<div class="app">
+  <aside class="nav">
+    <div class="brand">
+      <div class="mark" aria-hidden="true">Zz</div>
+      <div><b>Ziezo Webdesign</b><small>LinkedIn-beheer</small></div>
+    </div>
+    <nav class="tabs" id="tabs" aria-label="Onderdelen"></nav>
+    <div class="nav-foot">
+      <div id="conn"><span class="dot"></span>Verbinden…</div>
+      <div>Jij keurt goed en plaatst. Claude schrijft, herschrijft en plant.</div>
+    </div>
+  </aside>
+  <main><div class="wrap" id="main"></div></main>
+</div>
+
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="d-heading" hidden>
+  <header>
+    <span id="d-status" class="pill"></span>
+    <h2 id="d-heading" style="font-size:1rem">Post</h2>
+    <span class="sp"></span>
+    <button class="btn ghost" data-act="close" type="button">Sluiten</button>
+  </header>
+  <div class="d-body" id="d-body">
+    <p class="aan-line" id="d-aan"></p>
+    <label class="f">Werktitel <input type="text" id="d-titel" placeholder="Voor jezelf, komt niet op LinkedIn"></label>
+    <div class="row3">
+      <label class="f">Soort <select id="d-soort"></select></label>
+      <label class="f">Plaatsen op <input type="date" id="d-datum"></label>
+      <label class="f">Uur <input type="time" id="d-tijd"></label>
+    </div>
+    <label class="f">Posttekst
+      <textarea id="d-tekst" rows="13"></textarea>
+    </label>
+    <span class="count" id="d-count"></span>
+    <div>
+      <div class="label" style="margin-bottom:6px">Zo ziet het eruit in de feed</div>
+      <div class="preview" id="d-preview"></div>
+    </div>
+    <label class="f">Feedback voor Claude <span class="sub">Wat moet er anders? Claude leest dit bij het herschrijven.</span>
+      <textarea id="d-notitie" rows="3" placeholder="Bv. korter, minder formeel, eindig met een vraag"></textarea>
+    </label>
+    <div id="d-gepost" class="fields" hidden>
+      <label class="f">Link naar de post op LinkedIn <input type="url" id="d-url" placeholder="https://www.linkedin.com/feed/update/…"></label>
+      <div class="row4">
+        <label class="f">Weergaven <input type="number" min="0" id="d-weergaven"></label>
+        <label class="f">Reacties <input type="number" min="0" id="d-reacties"></label>
+        <label class="f">Likes <input type="number" min="0" id="d-likes"></label>
+        <label class="f">Reposts <input type="number" min="0" id="d-reposts"></label>
+      </div>
+    </div>
+    <p class="working" id="d-working" hidden></p>
+  </div>
+  <footer id="d-actions"></footer>
+</aside>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+const STATUS = {
+  idee:        { label: "Idee",        aan: "claude", taak: "uitwerken tot een concept" },
+  concept:     { label: "Concept",     aan: "jij",    taak: "nalezen en goedkeuren of feedback geven" },
+  feedback:    { label: "Feedback",    aan: "claude", taak: "herschrijven met jouw opmerking" },
+  goedgekeurd: { label: "Goedgekeurd", aan: "jij",    taak: "plaatsen op LinkedIn op de geplande dag" },
+  gepost:      { label: "Gepost",      aan: null,     taak: "cijfers aanvullen na een week" },
+};
+const SOORTEN = ["Introductie", "Klantcase", "Tip", "Achter de schermen", "Voor en na", "Aanbod", "Persoonlijk verhaal"];
+const VIEWS = [
+  ["overzicht", "Overzicht"], ["posts", "Posts"], ["opdrachten", "Opdrachten"],
+  ["pagina", "Bedrijfspagina"], ["cijfers", "Cijfers"], ["briefing", "Briefing"],
+];
+const FORM_VIEWS = ["pagina", "briefing"];
+const LIMIT = { post: 3000, fold: 200, slogan: 120, over: 2000 };
+
+const S = {
+  db: null, sample: null, conn: "wacht",
+  posts: [], opdrachten: [], stats: [], profiel: {}, pagina: {},
+  loaded: {}, view: "overzicht", filter: "open",
+  open: null, dDirty: false, dirty: {}, gen: { onderwerp: "", soort: "Tip" }, busy: false,
+};
+
+/* ---------- datums ---------- */
+const iso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const today = () => iso(new Date());
+const parse = (s) => { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); };
+const fmtDay = (s) => s ? parse(s).toLocaleDateString("nl-BE", { weekday: "short", day: "numeric", month: "short" }) : "geen datum";
+const fmtMonth = (s) => { const [y, m] = s.split("-").map(Number); return new Date(y, m - 1, 1).toLocaleDateString("nl-BE", { month: "long", year: "numeric" }); };
+function nextSlot() {
+  const taken = new Set(S.posts.filter((p) => p.status !== "gepost").map((p) => p.datum));
+  const d = new Date(); d.setDate(d.getDate() + 1);
+  for (let i = 0; i < 90; i++, d.setDate(d.getDate() + 1)) {
+    if ([2, 3, 4].includes(d.getDay()) && !taken.has(iso(d))) return iso(d);
+  }
+  return iso(d);
+}
+const nf = (n) => n == null || n === "" || isNaN(n) ? "–" : Number(n).toLocaleString("nl-BE");
+
+/* ---------- algemeen ---------- */
+function toast(msg) {
+  const t = $("#toast"); t.textContent = msg; t.hidden = false;
+  clearTimeout(toast.t); toast.t = setTimeout(() => (t.hidden = true), 2600);
+}
+async function copy(text) {
+  try { await navigator.clipboard.writeText(text); toast("Gekopieerd, plak het in LinkedIn"); }
+  catch {
+    const ta = document.createElement("textarea"); ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.append(ta); ta.select();
+    try { document.execCommand("copy"); toast("Gekopieerd, plak het in LinkedIn"); } catch { toast("Kopiëren lukte niet. Selecteer de tekst zelf."); }
+    ta.remove();
+  }
+}
+function failWrite(e) {
+  console.error(e);
+  toast(e?.code === "invalid_argument" ? "Opslaan lukte niet: je hebt geen schrijfrechten op dit dashboard." : "Opslaan lukte niet. Probeer het zo opnieuw.");
+}
+const stamp = () => new Date().toISOString();
+const sortPosts = (a, b) => (a.datum || "9999").localeCompare(b.datum || "9999") || (a.tijd || "").localeCompare(b.tijd || "");
+
+/* ---------- weergave ---------- */
+function counts() {
+  const c = { jij: 0, claude: 0 };
+  for (const p of S.posts) { const a = STATUS[p.status]?.aan; if (a) c[a]++; }
+  c.claude += S.opdrachten.filter((o) => o.status !== "klaar").length;
+  return c;
+}
+function renderNav() {
+  const c = counts();
+  const badge = { posts: c.jij || "", opdrachten: S.opdrachten.filter((o) => o.status !== "klaar").length || "" };
+  $("#tabs").innerHTML = VIEWS.map(([k, l]) =>
+    `<button class="tab" type="button" data-act="view" data-v="${k}" ${S.view === k ? 'aria-current="page"' : ""}>${l}${badge[k] ? `<span class="n">${badge[k]}</span>` : ""}</button>`).join("");
+  const conn = $("#conn");
+  conn.innerHTML = S.conn === "ok" ? '<span class="dot on"></span>Opgeslagen in de cloud'
+    : S.conn === "geen" ? '<span class="dot off"></span>Opslag niet beschikbaar' : '<span class="dot"></span>Verbinden…';
+}
+function render() {
+  renderNav();
+  if (FORM_VIEWS.includes(S.view) && S.dirty[S.view]) return;
+  const a = document.activeElement;
+  const id = a && a.id && $("#main").contains(a) ? a.id : null;
+  let sel = null; try { if (id && a.selectionStart != null) sel = [a.selectionStart, a.selectionEnd]; } catch {}
+  $("#main").innerHTML = (S.conn === "geen" ? `<div class="banner">De opslag is niet bereikbaar. Open dit dashboard ingelogd op claude.ai om posts te bewaren en te zien wat Claude klaarzette.</div>` : "") + VIEW_FN[S.view]();
+  if (id) { const el = document.getElementById(id); if (el) { el.focus(); try { if (sel) el.setSelectionRange(...sel); } catch {} } }
+}
+const pill = (s) => `<span class="pill s-${esc(s)}">${esc(STATUS[s]?.label || s)}</span>`;
+const loading = (k) => !S.loaded[k] && S.conn !== "geen";
+
+function todoItem(p) {
+  const late = p.status === "goedgekeurd" && p.datum && p.datum < today();
+  return `<li><button type="button" data-act="open" data-id="${esc(p.id)}">${pill(p.status)}<span class="t">${esc(p.titel || "Zonder titel")}</span><span class="when ${late ? "late" : ""}">${late ? "te laat · " : ""}${esc(fmtDay(p.datum))}</span></button></li>`;
+}
+
+const VIEW_FN = {
+  overzicht() {
+    const jij = S.posts.filter((p) => STATUS[p.status]?.aan === "jij").sort(sortPosts);
+    const cl = S.posts.filter((p) => STATUS[p.status]?.aan === "claude").sort(sortPosts);
+    const ops = S.opdrachten.filter((o) => o.status !== "klaar");
+    const stats = [...S.stats].sort((a, b) => a.id.localeCompare(b.id));
+    const last = stats.at(-1), prev = stats.at(-2);
+    const month = today().slice(0, 7);
+    const postedMonth = S.posts.filter((p) => p.status === "gepost" && (p.datum || "").startsWith(month)).length;
+    const planned = S.posts.filter((p) => ["concept", "goedgekeurd", "feedback"].includes(p.status) && p.datum >= today()).length;
+    const withViews = S.posts.filter((p) => p.status === "gepost" && p.stats?.weergaven);
+    const avg = withViews.length ? Math.round(withViews.reduce((s, p) => s + Number(p.stats.weergaven), 0) / withViews.length) : null;
+    const diff = last && prev && last.volgers != null && prev.volgers != null ? last.volgers - prev.volgers : null;
+    const noBrief = !S.profiel?.diensten;
+    return `
+    <div class="head"><div><h1>Ziezo op LinkedIn</h1><p>Wie is aan zet, wat staat er gepland en hoe groeit de pagina. Klik op een post om hem te lezen, aan te passen of goed te keuren.</p></div>
+      <button class="btn primary" type="button" data-act="view" data-v="posts">Naar alle posts</button></div>
+    ${noBrief && S.loaded.profiel ? `<div class="banner">Vul eerst de <button class="btn" type="button" data-act="view" data-v="briefing">Briefing</button> in. Zonder die info schrijft Claude algemene posts met [VUL AAN]-plekken.</div>` : ""}
+    <div class="kpis">
+      <div class="kpi"><span class="label">Volgers</span><b>${nf(last?.volgers)}</b><small>${diff == null ? "nog geen vergelijking" : `${diff >= 0 ? "+" : ""}${nf(diff)} t.o.v. vorige maand`}</small></div>
+      <div class="kpi"><span class="label">Gepost deze maand</span><b>${postedMonth}</b><small>doel: ${esc(S.profiel?.frequentie || "2 per week")}</small></div>
+      <div class="kpi"><span class="label">In de planning</span><b>${planned}</b><small>vanaf vandaag</small></div>
+      <div class="kpi"><span class="label">Gem. weergaven</span><b>${nf(avg)}</b><small>${withViews.length} post${withViews.length === 1 ? "" : "s"} met cijfers</small></div>
+    </div>
+    <div class="turns">
+      <section class="panel turn jij"><h2><span class="who">Jij</span> bent aan zet</h2>
+        ${loading("posts") ? `<p class="empty">Laden…</p>` : jij.length ? `<ul class="todo">${jij.map(todoItem).join("")}</ul>` : `<p class="empty">Niets te doen. Claude zet nieuwe concepten klaar.</p>`}
+      </section>
+      <section class="panel turn claude"><h2><span class="who">Claude</span> is aan zet</h2>
+        ${cl.length || ops.length ? `<ul class="todo">${cl.map(todoItem).join("")}${ops.map((o) => `<li><button type="button" data-act="view" data-v="opdrachten"><span class="pill s-idee">Opdracht</span><span class="t">${esc(o.tekst)}</span><span class="when"></span></button></li>`).join("")}</ul>` : `<p class="empty">Geen openstaand werk voor Claude.</p>`}
+        <p class="hint">Zeg in je Claude-sessie: <code>werk het LinkedIn-dashboard bij</code>. Claude leest dan alle ideeën, feedback en opdrachten en zet nieuwe versies klaar. Of druk op ✦ bij een post om het meteen hier te laten doen.</p>
+      </section>
+    </div>
+    <section class="panel">
+      <div class="panel-head"><h2>Komende vier weken</h2><span class="muted" style="font-size:.85rem"><span class="pill s-goedgekeurd" style="margin-right:6px">di–do</span>beste dagen voor bedrijfspagina's</span></div>
+      <div class="cal-wrap">${calendar()}</div>
+    </section>`;
+  },
+
+  posts() {
+    const F = [["open", "Lopend"], ["concept", "Na te lezen"], ["goedgekeurd", "Klaar om te plaatsen"], ["claude", "Bij Claude"], ["gepost", "Gepost"], ["alles", "Alles"]];
+    const match = (p) => S.filter === "alles" ? true : S.filter === "open" ? p.status !== "gepost"
+      : S.filter === "claude" ? STATUS[p.status]?.aan === "claude" : p.status === S.filter;
+    let list = S.posts.filter(match).sort(sortPosts);
+    if (S.filter === "gepost") list.reverse();
+    return `
+    <div class="head"><div><h1>Posts</h1><p>Claude schrijft concepten. Jij leest na, keurt goed en plaatst ze op LinkedIn. Na een week vul je de cijfers aan, zodat Claude leert wat werkt.</p></div>
+      <button class="btn" type="button" data-act="new">Lege post</button></div>
+    ${S.sample ? `
+    <section class="panel">
+      <div class="panel-head"><h2>Nieuwe post laten schrijven</h2><span class="muted" style="font-size:.85rem">Claude gebruikt je briefing en eerdere posts</span></div>
+      <div class="gen">
+        <label class="f">Waarover? <input type="text" id="gen-onderwerp" value="${esc(S.gen.onderwerp)}" placeholder="Bv. waarom een trage website klanten kost"></label>
+        <label class="f">Soort <select id="gen-soort">${SOORTEN.map((s) => `<option ${s === S.gen.soort ? "selected" : ""}>${s}</option>`).join("")}</select></label>
+        <button class="btn primary claude" type="button" data-act="generate" ${S.busy ? "disabled" : ""}>${S.busy ? "Claude schrijft…" : "Schrijf concept"}</button>
+      </div>
+    </section>` : ""}
+    <div class="filters" role="group" aria-label="Filter">${F.map(([k, l]) => `<button class="fbtn" type="button" data-act="filter" data-f="${k}" aria-pressed="${S.filter === k}">${l}</button>`).join("")}</div>
+    ${loading("posts") ? `<p class="empty">Laden…</p>` : list.length ? `<div class="posts">${list.map(card).join("")}</div>`
+      : `<div class="panel"><p class="empty">Geen posts in deze lijst. ${S.posts.length ? "Kies een andere filter." : "Laat Claude een eerste concept schrijven, of maak een lege post."}</p></div>`}`;
+  },
+
+  opdrachten() {
+    const list = [...S.opdrachten].sort((a, b) => (a.status === "klaar") - (b.status === "klaar") || (b.aangemaakt || "").localeCompare(a.aangemaakt || ""));
+    return `
+    <div class="head"><div><h1>Opdrachten voor Claude</h1><p>Alles wat geen gewone post is: een reeks posts rond een lancering, een antwoord op een reactie, een idee voor de banner. Claude antwoordt hier.</p></div></div>
+    <section class="panel">
+      <label class="f">Nieuwe opdracht <textarea id="op-tekst" rows="3" placeholder="Bv. schrijf drie posts over het AVD-velgenproject zodra de klant akkoord geeft"></textarea></label>
+      <div class="btns"><button class="btn primary" type="button" data-act="op-add">Opdracht toevoegen</button>
+      <span class="muted" style="font-size:.85rem">Claude pakt dit op wanneer je in je sessie vraagt om het dashboard bij te werken.</span></div>
+    </section>
+    <section class="panel">
+      ${loading("opdrachten") ? `<p class="empty">Laden…</p>` : list.length ? list.map((o) => `
+        <div class="op">
+          <div class="btns">${o.status === "klaar" ? '<span class="pill s-gepost">Klaar</span>' : '<span class="pill s-feedback">Open</span>'}<span class="mono muted" style="font-size:.78rem">${o.aangemaakt ? esc(fmtDay(o.aangemaakt.slice(0, 10))) : ""}</span></div>
+          <p style="white-space:pre-line">${esc(o.tekst)}</p>
+          ${o.antwoord ? `<div class="answer"><span class="label">Claude</span>${esc(o.antwoord)}</div>` : ""}
+          <div class="btns">
+            ${o.status === "klaar" ? `<button class="btn ghost" type="button" data-act="op-reopen" data-id="${esc(o.id)}">Opnieuw openen</button>` : `<button class="btn ghost" type="button" data-act="op-done" data-id="${esc(o.id)}">Markeer als klaar</button>`}
+            <button class="btn ghost danger" type="button" data-act="op-del" data-id="${esc(o.id)}">Verwijderen</button>
+          </div>
+        </div>`).join("") : `<p class="empty">Nog geen opdrachten.</p>`}
+    </section>`;
+  },
+
+  pagina() {
+    const P = S.pagina || {};
+    const st = P.stappen || {};
+    const steps = [
+      ["profiel", "Log in op je persoonlijke LinkedIn-profiel (een bedrijfspagina hangt altijd aan een persoon)."],
+      ["aanmaken", 'Ga naar <a href="https://www.linkedin.com/company/setup/new/" target="_blank" rel="noopener">linkedin.com/company/setup/new</a> en kies "Bedrijf".'],
+      ["basis", "Vul naam, LinkedIn-URL (linkedin.com/company/ziezo-webdesign), website, sector en grootte in met de velden hieronder."],
+      ["beeld", "Upload het logo (300 × 300 px) en een omslagfoto (1128 × 191 px)."],
+      ["teksten", "Plak de slogan, de Over ons-tekst en de specialisaties."],
+      ["knop", 'Zet de aangepaste knop op "Website bezoeken" of "Contact opnemen".'],
+      ["eerste", "Plaats de introductiepost en nodig je eigen connecties uit om de pagina te volgen."],
+    ];
+    const field = (k, label, opts = {}) => {
+      const v = P[k] ?? "";
+      const tag = opts.rows
+        ? `<textarea id="pg-${k}" data-form="pagina" data-k="${k}" rows="${opts.rows}">${esc(v)}</textarea>`
+        : `<input type="text" id="pg-${k}" data-form="pagina" data-k="${k}" value="${esc(v)}">`;
+      return `<div class="field-copy"><div class="top"><label class="label" for="pg-${k}">${label}</label>
+        <div class="btns">${opts.max ? `<span class="count ${String(v).length > opts.max ? "over" : ""}" data-count="pg-${k}" data-max="${opts.max}">${String(v).length} / ${opts.max}</span>` : ""}
+        <button class="btn ghost" type="button" data-act="copy-field" data-src="pg-${k}">Kopieer</button></div></div>${tag}
+        ${opts.help ? `<span class="muted" style="font-size:.8rem">${opts.help}</span>` : ""}</div>`;
+    };
+    return `
+    <div class="head"><div><h1>Bedrijfspagina</h1><p>Alle teksten voor de LinkedIn-pagina, klaar om te kopiëren. Claude stelt ze op. Pas gerust aan; wat hier staat geldt als de officiële versie.</p></div></div>
+    <div class="grid2" style="align-items:start">
+      <section class="panel" style="order:2">
+        <h2>Pagina aanmaken</h2>
+        <ol class="steps">${steps.map(([k, t]) => `<li class="${st[k] ? "done" : ""}"><input type="checkbox" id="st-${k}" data-act="step" data-k="${k}" ${st[k] ? "checked" : ""} aria-label="Stap klaar"><span>${t}</span></li>`).join("")}</ol>
+      </section>
+      <section class="panel fields">
+        ${field("slogan", "Slogan", { max: LIMIT.slogan, help: "Staat onder de bedrijfsnaam, ook in zoekresultaten." })}
+        ${field("over", "Over ons", { rows: 10, max: LIMIT.over, help: "De eerste twee regels zijn zichtbaar zonder door te klikken." })}
+        ${field("specialisaties", "Specialisaties", { rows: 2, help: "Gescheiden door komma's, maximaal 20." })}
+        <div class="grid2">
+          ${field("website", "Website")}
+          ${field("sector", "Sector", { help: "LinkedIn-lijst: Ontwerpdiensten of IT-diensten en IT-consulting." })}
+          ${field("grootte", "Bedrijfsgrootte")}
+          ${field("vestiging", "Vestiging")}
+        </div>
+        ${field("knop", "Aangepaste knop")}
+      </section>
+    </div>
+    ${saveBar("pagina")}`;
+  },
+
+  cijfers() {
+    const stats = [...S.stats].sort((a, b) => a.id.localeCompare(b.id));
+    const posted = S.posts.filter((p) => p.status === "gepost").sort(sortPosts).reverse();
+    const lastMonth = (() => { const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - 1); return iso(d).slice(0, 7); })();
+    return `
+    <div class="head"><div><h1>Cijfers</h1><p>Eén keer per maand de cijfers uit LinkedIn (Pagina → Statistieken) overnemen. Claude gebruikt ze om te kiezen welke soort posts meer moeten komen.</p></div></div>
+    <section class="panel">
+      <h2>Maand toevoegen of bijwerken</h2>
+      <div class="statform">
+        <label class="f">Maand <input type="month" id="sf-maand" value="${lastMonth}"></label>
+        <label class="f">Volgers <input type="number" min="0" id="sf-volgers"></label>
+        <label class="f">Weergaven <input type="number" min="0" id="sf-weergaven"></label>
+        <label class="f">Interacties <input type="number" min="0" id="sf-interacties"></label>
+        <label class="f">Paginabezoekers <input type="number" min="0" id="sf-bezoekers"></label>
+        <button class="btn primary" type="button" data-act="stat-save">Bewaren</button>
+      </div>
+    </section>
+    <div class="grid2" style="align-items:start">
+      <section class="panel"><h2>Volgers per maand</h2>${chart(stats)}</section>
+      <section class="panel"><h2>Per maand</h2>
+        ${stats.length ? `<div class="tbl"><table><thead><tr><th>Maand</th><th class="num">Volgers</th><th class="num">Weergaven</th><th class="num">Interacties</th><th class="num">Bezoekers</th></tr></thead><tbody>
+        ${stats.slice().reverse().map((s) => `<tr><td>${esc(fmtMonth(s.id))}</td><td class="num">${nf(s.volgers)}</td><td class="num">${nf(s.weergaven)}</td><td class="num">${nf(s.interacties)}</td><td class="num">${nf(s.bezoekers)}</td></tr>`).join("")}
+        </tbody></table></div>` : `<p class="empty">Nog geen maanden ingevuld.</p>`}
+      </section>
+    </div>
+    <section class="panel"><h2>Per post</h2>
+      ${posted.length ? `<div class="tbl"><table><thead><tr><th>Post</th><th>Soort</th><th>Datum</th><th class="num">Weergaven</th><th class="num">Reacties</th><th class="num">Likes</th><th class="num">Interactie</th></tr></thead><tbody>
+      ${posted.map((p) => { const s = p.stats || {}; const rate = s.weergaven ? ((Number(s.reacties || 0) + Number(s.likes || 0) + Number(s.reposts || 0)) / s.weergaven * 100).toFixed(1).replace(".", ",") + " %" : "–";
+        return `<tr><td><button class="btn ghost" style="padding:2px 4px" type="button" data-act="open" data-id="${esc(p.id)}">${esc((p.titel || "Zonder titel").slice(0, 48))}</button></td><td>${esc(p.soort || "")}</td><td class="mono">${esc(fmtDay(p.datum))}</td><td class="num">${nf(s.weergaven)}</td><td class="num">${nf(s.reacties)}</td><td class="num">${nf(s.likes)}</td><td class="num">${rate}</td></tr>`; }).join("")}
+      </tbody></table></div>` : `<p class="empty">Zodra posts op "Gepost" staan en je hun cijfers invult, verschijnen ze hier.</p>`}
+    </section>`;
+  },
+
+  briefing() {
+    const P = S.profiel || {};
+    const f = (k, label, sub, opts = {}) => {
+      const v = P[k] ?? opts.def ?? "";
+      const ctl = opts.options
+        ? `<select id="br-${k}" data-form="briefing" data-k="${k}">${opts.options.map((o) => `<option ${o === v ? "selected" : ""}>${esc(o)}</option>`).join("")}</select>`
+        : opts.rows ? `<textarea id="br-${k}" data-form="briefing" data-k="${k}" rows="${opts.rows}" placeholder="${esc(opts.ph || "")}">${esc(v)}</textarea>`
+        : `<input type="text" id="br-${k}" data-form="briefing" data-k="${k}" value="${esc(v)}" placeholder="${esc(opts.ph || "")}">`;
+      return `<label class="f">${label}${sub ? ` <span class="sub">${sub}</span>` : ""}${ctl}</label>`;
+    };
+    return `
+    <div class="head"><div><h1>Briefing</h1><p>Wat Claude moet weten om als Ziezo Webdesign te schrijven. Hoe concreter, hoe minder [VUL AAN] in de concepten.</p></div></div>
+    <div class="grid2" style="align-items:start">
+      <section class="panel fields">
+        <h2>Het bedrijf</h2>
+        ${f("naam", "Bedrijfsnaam", "", { def: "Ziezo Webdesign" })}
+        ${f("diensten", "Wat doet Ziezo?", "Diensten en prijsniveau", { rows: 3, ph: "Websites, webshops, onderhoud, SEO, maatwerk zoals 3D-configurators…" })}
+        ${f("doelgroep", "Voor wie?", "", { rows: 2, ph: "Kmo's en zelfstandigen, autobranche, horeca…" })}
+        ${f("regio", "Regio", "", { ph: "Bv. Antwerpen en omstreken, heel Vlaanderen" })}
+        ${f("wie", "Wie zit erachter?", "Naam, rol, achtergrond", { rows: 2 })}
+        ${f("website", "Website", "", { ph: "https://" })}
+        ${f("contact", "Contact voor in posts", "", { ph: "E-mail of telefoon" })}
+        ${f("usp", "Waarom kiezen klanten voor Ziezo?", "", { rows: 2, ph: "Snel, persoonlijk, één aanspreekpunt, technisch sterk…" })}
+      </section>
+      <section class="panel fields">
+        <h2>Stem en afspraken</h2>
+        ${f("aanspreken", "Aanspreekvorm", "", { options: ["je/jij, luchtig", "je/jij, zakelijk", "u, zakelijk"], def: "je/jij, luchtig" })}
+        ${f("taal", "Taal", "", { options: ["Vlaams Nederlands", "Nederlands (Nederland)", "Nederlands en Engels afwisselen"], def: "Vlaams Nederlands" })}
+        ${f("frequentie", "Hoe vaak posten?", "", { options: ["1 per week", "2 per week", "3 per week"], def: "2 per week" })}
+        ${f("emoji", "Emoji", "", { options: ["Spaarzaam (max. 2)", "Geen", "Mag gerust"], def: "Spaarzaam (max. 2)" })}
+        ${f("onderwerpen", "Onderwerpen die passen", "", { rows: 3, ph: "Snelheid, mobiel, SEO, tips voor ondernemers, projecten…" })}
+        ${f("vermijden", "Wat nooit", "", { rows: 2, ph: "Geen prijzen noemen, niet negatief over concurrenten…" })}
+        ${f("klanten", "Klanten die genoemd mogen worden", "Alleen met hun akkoord", { rows: 2, ph: "Bv. AVD Velgen (akkoord gevraagd?)" })}
+      </section>
+    </div>
+    ${saveBar("briefing")}`;
+  },
+};
+
+function saveBar(form) {
+  return S.dirty[form] ? `<div class="savebar"><span>Niet-bewaarde wijzigingen</span><div class="btns"><button class="btn ghost" style="color:inherit;background:none;border-color:transparent" type="button" data-act="form-reset" data-form="${form}">Ongedaan maken</button><button class="btn" type="button" data-act="form-save" data-form="${form}">Bewaren</button></div></div>` : "";
+}
+
+function card(p) {
+  const st = STATUS[p.status] || {};
+  const who = st.aan === "jij" ? "Jij" : st.aan === "claude" ? "Claude" : null;
+  return `<article class="post" tabindex="0" role="button" data-act="open" data-id="${esc(p.id)}" aria-label="${esc(p.titel || "Post")} openen">
+    <div class="post-top">${pill(p.status)}<span>${esc(p.soort || "")}</span><span class="date">${esc(fmtDay(p.datum))}${p.tijd ? " · " + esc(p.tijd) : ""}</span></div>
+    <h3>${esc(p.titel || "Zonder titel")}</h3>
+    <p class="excerpt">${esc((p.tekst || "Nog geen tekst.").slice(0, 320))}</p>
+    <p class="aan">${who ? `Aan zet: <b>${who}</b>, ${esc(st.taak)}` : esc(st.taak || "")}</p>
+  </article>`;
+}
+
+function calendar() {
+  const d0 = new Date(); const dow = (d0.getDay() + 6) % 7; d0.setDate(d0.getDate() - dow);
+  const by = {};
+  for (const p of S.posts) if (p.datum) (by[p.datum] ||= []).push(p);
+  const t = today();
+  let html = ["ma", "di", "wo", "do", "vr", "za", "zo"].map((d) => `<div class="dow">${d}</div>`).join("");
+  for (let i = 0; i < 28; i++) {
+    const d = new Date(d0); d.setDate(d0.getDate() + i); const k = iso(d);
+    const best = [2, 3, 4].includes(d.getDay());
+    const items = (by[k] || []).sort(sortPosts);
+    html += `<div class="day ${k < t ? "past" : ""} ${k === t ? "today" : ""}"><div class="num"><span>${d.getDate()}${d.getDate() === 1 || i === 0 ? " " + d.toLocaleDateString("nl-BE", { month: "short" }) : ""}</span>${best && k >= t && !items.length ? '<span class="best">vrij</span>' : ""}</div>
+      ${items.map((p) => `<button class="chip s-${esc(p.status)}" type="button" data-act="open" data-id="${esc(p.id)}" title="${esc(p.titel || "")}">${esc(p.titel || "Zonder titel")}</button>`).join("")}</div>`;
+  }
+  return `<div class="cal">${html}</div>`;
+}
+
+function chart(stats) {
+  const pts = stats.filter((s) => s.volgers != null && s.volgers !== "");
+  if (pts.length < 2) return `<p class="empty">Na twee maanden met volgers verschijnt hier de lijn.</p>`;
+  const W = 520, H = 200, L = 46, R = 14, T = 14, B = 28;
+  const vals = pts.map((p) => Number(p.volgers));
+  let lo = Math.min(...vals), hi = Math.max(...vals);
+  const step = niceStep((hi - lo) / 4 || 10);
+  lo = Math.floor(lo / step) * step; hi = Math.ceil(hi / step) * step; if (hi === lo) hi = lo + step;
+  const x = (i) => L + (i * (W - L - R)) / (pts.length - 1);
+  const y = (v) => T + (H - T - B) * (1 - (v - lo) / (hi - lo));
+  const line = pts.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(vals[i]).toFixed(1)}`).join("");
+  let grid = "";
+  for (let v = lo; v <= hi + 1e-9; v += step) grid += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)" stroke-width="1"/><text x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${nf(v)}</text>`;
+  const every = Math.ceil(pts.length / 6);
+  const labels = pts.map((p, i) => i % every === 0 || i === pts.length - 1 ? `<text x="${x(i)}" y="${H - 8}" text-anchor="middle">${esc(new Date(p.id + "-01").toLocaleDateString("nl-BE", { month: "short" }))}</text>` : "").join("");
+  const li = pts.length - 1;
+  return `<div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Volgers per maand">${grid}
+    <path d="${line}L${x(li)},${H - B}L${L},${H - B}Z" fill="var(--accent-soft)" opacity="0.7"/>
+    <path d="${line}" fill="none" stroke="var(--accent)" stroke-width="2.2" stroke-linejoin="round"/>
+    <circle cx="${x(li)}" cy="${y(vals[li])}" r="4.5" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"/>${labels}</svg></div>`;
+}
+function niceStep(raw) { const p = Math.pow(10, Math.floor(Math.log10(raw))); const n = raw / p; return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * p; }
+
+/* ---------- bewerkpaneel ---------- */
+const D = (k) => $("#d-" + k);
+function openPost(id) {
+  const p = S.posts.find((x) => x.id === id); if (!p) return;
+  S.open = id; S.dDirty = false; S.delArm = false;
+  fillDrawer(p);
+  $("#scrim").hidden = false; $("#drawer").hidden = false;
+  $("#d-body").scrollTop = 0;
+  setTimeout(() => D("tekst").focus({ preventScroll: true }), 30);
+}
+function closeDrawer() {
+  if (S.dDirty && !S.closeArm) { S.closeArm = true; toast("Niet bewaard. Klik nogmaals op Sluiten om de wijzigingen weg te gooien."); return; }
+  S.open = null; S.dDirty = false; S.closeArm = false;
+  $("#scrim").hidden = true; $("#drawer").hidden = true;
+}
+function fillDrawer(p) {
+  const st = STATUS[p.status] || {};
+  D("status").className = "pill s-" + p.status; D("status").textContent = st.label || p.status;
+  D("heading").textContent = p.titel || "Post";
+  D("aan").innerHTML = st.aan ? `Aan zet: <b>${st.aan === "jij" ? "jij" : "Claude"}</b>, ${esc(st.taak)}.${p.door === "claude" ? " Geschreven door Claude." : ""}` : esc(st.taak);
+  D("soort").innerHTML = [...new Set([...SOORTEN, p.soort].filter(Boolean))].map((s) => `<option ${s === p.soort ? "selected" : ""}>${esc(s)}</option>`).join("");
+  D("titel").value = p.titel || ""; D("datum").value = p.datum || ""; D("tijd").value = p.tijd || "";
+  D("tekst").value = p.tekst || ""; D("notitie").value = p.notitie || "";
+  D("gepost").hidden = p.status !== "gepost";
+  const s = p.stats || {};
+  D("url").value = p.url || ""; D("weergaven").value = s.weergaven ?? ""; D("reacties").value = s.reacties ?? ""; D("likes").value = s.likes ?? ""; D("reposts").value = s.reposts ?? "";
+  D("working").hidden = true;
+  updatePreview(); drawerActions(p);
+}
+function updatePreview() {
+  const t = D("tekst").value; const n = t.length;
+  const c = D("count"); c.textContent = `${n} / ${LIMIT.post} tekens`; c.classList.toggle("over", n > LIMIT.post);
+  const name = S.profiel?.naam || "Ziezo Webdesign";
+  const cut = t.length > LIMIT.fold ? t.lastIndexOf(" ", LIMIT.fold) : t.length;
+  const vis = t.slice(0, cut > 40 ? cut : LIMIT.fold), rest = t.slice(vis.length);
+  D("preview").innerHTML = `<div class="who"><div class="mark">Zz</div><div><b>${esc(name)}</b><small>Bedrijfspagina · ${esc(fmtDay(D("datum").value))}</small></div></div>
+    <div class="txt">${esc(vis)}${rest ? `<span class="more">… meer weergeven</span>` : ""}</div>
+    ${rest ? `<div class="txt fold"><span class="label" style="display:block;margin-bottom:4px">Na "meer weergeven"</span>${esc(rest)}</div>` : ""}`;
+}
+function drawerActions(p) {
+  const A = [];
+  const sm = !!S.sample;
+  A.push(`<button class="btn ${S.dDirty ? "primary" : ""}" type="button" data-act="d-save">Bewaren</button>`);
+  A.push(`<button class="btn" type="button" data-act="d-copy">Kopieer tekst</button>`);
+  if (p.status === "idee") { if (sm) A.push(`<button class="btn primary claude" type="button" data-act="d-rewrite">Werk uit</button>`); A.push(`<button class="btn" type="button" data-act="d-status" data-s="concept">Zet op concept</button>`); }
+  if (p.status === "concept") { A.push(`<button class="btn primary" type="button" data-act="d-status" data-s="goedgekeurd">Goedkeuren</button>`); A.push(`<button class="btn" type="button" data-act="d-feedback">Vraag aanpassing</button>`); if (sm) A.push(`<button class="btn claude" type="button" data-act="d-rewrite">Herschrijf nu</button>`); }
+  if (p.status === "feedback") { if (sm) A.push(`<button class="btn primary claude" type="button" data-act="d-rewrite">Herschrijf nu</button>`); A.push(`<button class="btn" type="button" data-act="d-status" data-s="goedgekeurd">Toch goedkeuren</button>`); }
+  if (p.status === "goedgekeurd") { A.push(`<button class="btn primary" type="button" data-act="d-posted">Gepost op LinkedIn</button>`); A.push(`<button class="btn ghost" type="button" data-act="d-status" data-s="concept">Terug naar concept</button>`); }
+  if (p.status === "gepost") A.push(`<button class="btn ghost" type="button" data-act="d-status" data-s="goedgekeurd">Niet gepost</button>`);
+  A.push(`<button class="btn ghost danger" type="button" data-act="d-del" style="margin-left:auto">${S.delArm ? "Zeker? Klik nogmaals" : "Verwijderen"}</button>`);
+  D("actions").innerHTML = A.join("");
+}
+function drawerData() {
+  const num = (k) => D(k).value === "" ? null : Number(D(k).value);
+  return {
+    titel: D("titel").value.trim(), soort: D("soort").value, datum: D("datum").value, tijd: D("tijd").value,
+    tekst: D("tekst").value, notitie: D("notitie").value.trim(), url: D("url").value.trim(),
+    stats: { weergaven: num("weergaven"), reacties: num("reacties"), likes: num("likes"), reposts: num("reposts") },
+  };
+}
+async function savePost(id, extra = {}) {
+  if (!S.db) { toast("Opslag niet beschikbaar."); return false; }
+  try {
+    await S.db.doc("posts/" + id).update({ ...drawerData(), ...extra, bijgewerkt: stamp() });
+    S.dDirty = false; S.closeArm = false; return true;
+  } catch (e) { failWrite(e); return false; }
+}
+
+/* ---------- Claude in de pagina ---------- */
+function context() {
+  const P = S.profiel || {}, G = S.pagina || {};
+  const recent = S.posts.filter((p) => p.tekst && ["goedgekeurd", "gepost"].includes(p.status)).sort(sortPosts).slice(-5)
+    .map((p) => `- [${p.soort}] ${p.titel}: ${p.tekst.slice(0, 280).replace(/\s+/g, " ")}`).join("\n");
+  return `BRIEFING VAN DE EIGENAAR (JSON):\n${JSON.stringify(P, null, 1)}\n\nBEDRIJFSPAGINA:\nSlogan: ${G.slogan || "-"}\nOver ons: ${(G.over || "-").slice(0, 900)}\n\nEERDER GOEDGEKEURDE POSTS (stijlvoorbeeld, niet herhalen):\n${recent || "(nog geen)"}`;
+}
+const RULES = `Regels:
+- Schrijf in de taal en aanspreekvorm uit de briefing (standaard: Vlaams Nederlands, je/jij).
+- 700 tot 1300 tekens. De eerste regel (onder 200 tekens) moet doen stoppen met scrollen: een herkenbaar probleem, een concrete uitspraak of een vraag. Geen "Wist je dat".
+- Korte alinea's van 1 tot 3 zinnen met witregels ertussen. Emoji volgens de briefing.
+- Eindig met een vraag aan de lezer of een duidelijke call-to-action, daarna 3 tot 5 relevante hashtags op de laatste regel.
+- Verzin geen klantnamen, cijfers, prijzen of resultaten die niet in de briefing staan. Zet [VUL AAN: wat ontbreekt] waar echte info nodig is.
+- Geen links in de posttekst zelf (LinkedIn toont posts met links minder); verwijs naar "link in de reacties" als het moet.
+Antwoord met alleen JSON: {"titel": "korte werktitel van max 60 tekens", "tekst": "de volledige posttekst"}`;
+
+function sampleError(e) {
+  const m = { not_granted: "Je hebt Claude geen toestemming gegeven voor deze pagina.", rate_limited: "Even te veel gevraagd. Probeer het over een minuut opnieuw.",
+    refused: "Claude wilde dit niet schrijven. Pas het onderwerp aan.", invalid_json: "Claude gaf een onbruikbaar antwoord. Probeer opnieuw.", cancelled: "" };
+  const msg = m[e?.code] ?? "Claude was niet bereikbaar. Probeer opnieuw.";
+  if (msg) toast(msg);
+  if (["not_granted", "sampling_disabled", "not_declared", "capability_disabled", "capability_removed"].includes(e?.code)) { S.sample = null; render(); if (S.open) drawerActions(S.posts.find((p) => p.id === S.open) || {}); }
+}
+
+async function generate() {
+  const onderwerp = S.gen.onderwerp.trim();
+  if (!onderwerp) { toast("Vul eerst in waarover de post moet gaan."); $("#gen-onderwerp")?.focus(); return; }
+  if (!S.db) { toast("Opslag niet beschikbaar."); return; }
+  S.busy = true; render();
+  try {
+    const out = await S.sample.json(`Je beheert de LinkedIn-bedrijfspagina van ${S.profiel?.naam || "Ziezo Webdesign"}, een webdesignbureau. Schrijf één nieuwe post.\n\n${context()}\n\nOPDRACHT\nSoort post: ${S.gen.soort}\nOnderwerp: ${onderwerp}\n\n${RULES}`, { cache: false });
+    if (!out?.tekst) throw { code: "invalid_json" };
+    const ref = await S.db.collection("posts").add({ titel: String(out.titel || onderwerp).slice(0, 80), tekst: String(out.tekst), soort: S.gen.soort, status: "concept",
+      datum: nextSlot(), tijd: "08:30", notitie: "", door: "claude", aangemaakt: stamp(), bijgewerkt: stamp() });
+    S.gen.onderwerp = ""; toast("Concept klaar en ingepland");
+    S.busy = false; render(); setTimeout(() => openPost(ref.id), 60);
+  } catch (e) { S.busy = false; render(); if (e?.code) sampleError(e); else failWrite(e); }
+}
+
+async function rewrite() {
+  const p = S.posts.find((x) => x.id === S.open); if (!p) return;
+  const d = drawerData();
+  const btns = [...D("actions").querySelectorAll("button")]; btns.forEach((b) => (b.disabled = true));
+  const w = D("working"); w.hidden = false; w.textContent = "Claude schrijft… dit duurt meestal 10 tot 40 seconden.";
+  const task = p.status === "idee" || !d.tekst.trim()
+    ? `Werk dit idee uit tot een volledige post.\nSoort: ${d.soort}\nIdee: ${d.titel}\n${d.tekst ? "Notities: " + d.tekst : ""}${d.notitie ? "\nExtra wens: " + d.notitie : ""}`
+    : `Herschrijf deze post.\nSoort: ${d.soort}\nHUIDIGE TEKST:\n${d.tekst}\n\nFEEDBACK VAN DE EIGENAAR:\n${d.notitie || "(geen specifieke feedback: maak hem sterker en scherper)"}`;
+  try {
+    const out = await S.sample.json(`Je beheert de LinkedIn-bedrijfspagina van ${S.profiel?.naam || "Ziezo Webdesign"}, een webdesignbureau.\n\n${context()}\n\nOPDRACHT\n${task}\n\n${RULES}`, { cache: false });
+    if (!out?.tekst) throw { code: "invalid_json" };
+    D("tekst").value = String(out.tekst); if (out.titel) D("titel").value = String(out.titel).slice(0, 80);
+    const ok = await savePost(p.id, { tekst: String(out.tekst), titel: D("titel").value, status: "concept", door: "claude", notitie: "" });
+    if (ok) { D("notitie").value = ""; toast("Nieuwe versie staat klaar om na te lezen"); }
+  } catch (e) { if (e?.code) sampleError(e); else failWrite(e); }
+  w.hidden = true; btns.forEach((b) => (b.disabled = false));
+  const fresh = S.posts.find((x) => x.id === S.open); if (fresh) fillDrawer(fresh);
+}
+
+/* ---------- formulieren ---------- */
+async function saveForm(form) {
+  if (!S.db) { toast("Opslag niet beschikbaar."); return; }
+  const base = form === "pagina" ? S.pagina : S.profiel;
+  const next = { ...base };
+  document.querySelectorAll(`[data-form="${form}"]`).forEach((el) => (next[el.dataset.k] = el.value));
+  next.bijgewerkt = stamp();
+  try { await S.db.doc("config/" + (form === "pagina" ? "pagina" : "profiel")).set(next); S.dirty[form] = false; toast("Bewaard"); render(); }
+  catch (e) { failWrite(e); }
+}
+
+/* ---------- events ---------- */
+document.addEventListener("click", async (ev) => {
+  const el = ev.target.closest("[data-act]"); if (!el) return;
+  const act = el.dataset.act, id = el.dataset.id;
+  if (act !== "step" && el.tagName !== "INPUT") ev.preventDefault();
+  switch (act) {
+    case "view":
+      if (FORM_VIEWS.includes(S.view) && S.dirty[S.view] && S.view !== el.dataset.v && !S.leaveArm) { S.leaveArm = true; toast("Je hebt niet-bewaarde wijzigingen. Klik nogmaals om ze te laten vallen."); return; }
+      if (S.leaveArm) S.dirty[S.view] = false;
+      S.leaveArm = false; S.view = el.dataset.v; try { history.replaceState(null, "", "#" + S.view); } catch {} render(); window.scrollTo(0, 0); break;
+    case "filter": S.filter = el.dataset.f; render(); break;
+    case "open": openPost(id); break;
+    case "close": closeDrawer(); break;
+    case "generate": generate(); break;
+    case "new": {
+      if (!S.db) { toast("Opslag niet beschikbaar."); return; }
+      try { const ref = await S.db.collection("posts").add({ titel: "", tekst: "", soort: "Tip", status: "idee", datum: nextSlot(), tijd: "08:30", notitie: "", door: "jij", aangemaakt: stamp(), bijgewerkt: stamp() }); setTimeout(() => openPost(ref.id), 60); }
+      catch (e) { failWrite(e); } break;
+    }
+    case "d-save": if (await savePost(S.open)) toast("Bewaard"); break;
+    case "d-copy": copy(D("tekst").value); break;
+    case "d-status": if (await savePost(S.open, { status: el.dataset.s })) toast(`Op "${STATUS[el.dataset.s].label}" gezet`); break;
+    case "d-feedback":
+      if (!D("notitie").value.trim()) { toast("Schrijf eerst bij Feedback voor Claude wat er anders moet."); D("notitie").focus(); return; }
+      if (await savePost(S.open, { status: "feedback" })) toast("Claude herschrijft hem bij de volgende ronde"); break;
+    case "d-posted": {
+      const ok = await savePost(S.open, { status: "gepost", datum: D("datum").value || today(), gepostOp: stamp() });
+      if (ok) toast("Top! Vul over een week de cijfers aan."); break;
+    }
+    case "d-rewrite": rewrite(); break;
+    case "d-del":
+      if (!S.delArm) { S.delArm = true; drawerActions(S.posts.find((p) => p.id === S.open)); return; }
+      try { await S.db.doc("posts/" + S.open).delete(); S.dDirty = false; closeDrawer(); toast("Verwijderd"); } catch (e) { failWrite(e); } break;
+    case "copy-field": copy($("#" + el.dataset.src).value); break;
+    case "form-save": saveForm(el.dataset.form); break;
+    case "form-reset": S.dirty[el.dataset.form] = false; render(); break;
+    case "step": {
+      if (!S.db) return;
+      const st = { ...(S.pagina?.stappen || {}), [el.dataset.k]: el.checked };
+      try { await S.db.doc("config/pagina").set({ ...S.pagina, stappen: st }); } catch (e) { el.checked = !el.checked; failWrite(e); } break;
+    }
+    case "op-add": {
+      const t = $("#op-tekst").value.trim(); if (!t) { toast("Schrijf eerst wat Claude moet doen."); return; }
+      if (!S.db) { toast("Opslag niet beschikbaar."); return; }
+      try { await S.db.collection("opdrachten").add({ tekst: t, status: "open", antwoord: "", aangemaakt: stamp() }); toast("Opdracht staat klaar voor Claude"); } catch (e) { failWrite(e); } break;
+    }
+    case "op-done": case "op-reopen":
+      try { await S.db.doc("opdrachten/" + id).update({ status: act === "op-done" ? "klaar" : "open" }); } catch (e) { failWrite(e); } break;
+    case "op-del":
+      if (el.dataset.arm !== "1") { el.dataset.arm = "1"; el.textContent = "Zeker?"; return; }
+      try { await S.db.doc("opdrachten/" + id).delete(); } catch (e) { failWrite(e); } break;
+    case "stat-save": {
+      const m = $("#sf-maand").value; if (!m) { toast("Kies een maand."); return; }
+      if (!S.db) { toast("Opslag niet beschikbaar."); return; }
+      const g = (k) => $("#sf-" + k).value === "" ? null : Number($("#sf-" + k).value);
+      const old = S.stats.find((s) => s.id === m) || {};
+      const row = { volgers: g("volgers") ?? old.volgers ?? null, weergaven: g("weergaven") ?? old.weergaven ?? null, interacties: g("interacties") ?? old.interacties ?? null, bezoekers: g("bezoekers") ?? old.bezoekers ?? null, bijgewerkt: stamp() };
+      try { await S.db.doc("statistiek/" + m).set(row); toast(`${fmtMonth(m)} bewaard`); } catch (e) { failWrite(e); } break;
+    }
+  }
+});
+document.addEventListener("keydown", (ev) => {
+  if (ev.key === "Escape" && S.open) closeDrawer();
+  if ((ev.key === "Enter" || ev.key === " ") && ev.target.matches("article.post")) { ev.preventDefault(); openPost(ev.target.dataset.id); }
+});
+$("#scrim").addEventListener("click", closeDrawer);
+document.addEventListener("input", (ev) => {
+  const t = ev.target;
+  if (t.id === "gen-onderwerp") S.gen.onderwerp = t.value;
+  if (t.closest("#drawer")) { if (!S.dDirty) { S.dDirty = true; drawerActions(S.posts.find((p) => p.id === S.open) || {}); } if (t.id === "d-tekst" || t.id === "d-datum") updatePreview(); }
+  if (t.dataset.form) {
+    const c = document.querySelector(`[data-count="${t.id}"]`);
+    if (c) { c.textContent = `${t.value.length} / ${c.dataset.max}`; c.classList.toggle("over", t.value.length > Number(c.dataset.max)); }
+    if (!S.dirty[t.dataset.form]) { S.dirty[t.dataset.form] = true; $("#main").insertAdjacentHTML("beforeend", saveBar(t.dataset.form)); }
+  }
+});
+document.addEventListener("change", (ev) => {
+  if (ev.target.id === "gen-soort") S.gen.soort = ev.target.value;
+  if (ev.target.closest("#drawer") && !S.dDirty) { S.dDirty = true; drawerActions(S.posts.find((p) => p.id === S.open) || {}); }
+  if (ev.target.dataset.form && ev.target.tagName === "SELECT" && !S.dirty[ev.target.dataset.form]) { S.dirty[ev.target.dataset.form] = true; $("#main").insertAdjacentHTML("beforeend", saveBar(ev.target.dataset.form)); }
+});
+
+/* ---------- opstart ---------- */
+const h = (location.hash || "").slice(1);
+if (VIEWS.some(([k]) => k === h)) S.view = h;
+render();
+
+(async () => {
+  const use = (n) => window.claude?.use ? window.claude.use(n).catch(() => null) : Promise.resolve(null);
+  const [db, sample] = await Promise.all([use("db"), use("sample")]);
+  S.sample = sample;
+  if (!db) { S.conn = "geen"; render(); return; }
+  S.db = db; S.conn = "ok";
+  const onErr = (e) => { console.error(e); if (e?.code === "revoked") { S.conn = "geen"; render(); } };
+  db.collection("posts").onSnapshot((snap) => {
+    S.posts = snap.docs.map((d) => ({ id: d.id, ...d.data() })); S.loaded.posts = true; render();
+    if (S.open) { const p = S.posts.find((x) => x.id === S.open); if (!p) closeDrawer(); else if (!S.dDirty) fillDrawer(p); }
+  }, onErr);
+  db.collection("opdrachten").onSnapshot((snap) => { S.opdrachten = snap.docs.map((d) => ({ id: d.id, ...d.data() })); S.loaded.opdrachten = true; render(); }, onErr);
+  db.collection("statistiek").onSnapshot((snap) => { S.stats = snap.docs.map((d) => ({ id: d.id, ...d.data() })); S.loaded.stats = true; render(); }, onErr);
+  db.doc("config/profiel").onSnapshot((d) => { S.profiel = d.exists ? { ...d.data() } : {}; S.loaded.profiel = true; render(); }, onErr);
+  db.doc("config/pagina").onSnapshot((d) => { S.pagina = d.exists ? { ...d.data() } : {}; S.loaded.pagina = true; render(); }, onErr);
+  render();
+})();
+</script>
